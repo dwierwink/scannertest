@@ -1,0 +1,124 @@
+name: Build Android APK (NFC e-Money Reader)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-react-native-apk:
+    name: Build React Native APK (Tailwind + 3D Cards)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install NPM dependencies
+        run: npm install
+
+      - name: ⚙️ Expo Prebuild (Generate Native Android with NFC Plugin)
+        run: npx expo prebuild --platform android --clean
+
+      - name: 🔑 Set gradlew execution permissions
+        run: chmod +x android/gradlew
+
+      - name: 🔨 Build Android APK (Debug with Auto-Sign)
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: 📋 Rename and Stage APK
+        run: |
+          mkdir -p build-output
+          cp android/app/build/outputs/apk/debug/app-debug.apk build-output/NFC-eMoney-Reader-ReactNative.apk
+
+      - name: 📤 Upload React Native APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFC-eMoney-Reader-ReactNative-APK
+          path: build-output/NFC-eMoney-Reader-ReactNative.apk
+          retention-days: 30
+
+  build-native-java-apk:
+    name: Build Native Java APK (Pure Android)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🔑 Set root gradlew permissions
+        run: chmod +x ./gradlew
+
+      - name: 🔨 Build Native Android APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: 📋 Rename and Stage APK
+        run: |
+          mkdir -p build-output-native
+          cp app/build/outputs/apk/debug/app-debug.apk build-output-native/NFC-eMoney-Reader-NativeJava.apk
+
+      - name: 📤 Upload Native Java APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFC-eMoney-Reader-NativeJava-APK
+          path: build-output-native/NFC-eMoney-Reader-NativeJava.apk
+          retention-days: 30
+
+  create-release:
+    name: Create GitHub Release (On Tag Push)
+    needs: [build-react-native-apk, build-native-java-apk]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📥 Download React Native APK
+        uses: actions/download-artifact@v4
+        with:
+          name: NFC-eMoney-Reader-ReactNative-APK
+          path: release-files
+
+      - name: 📥 Download Native Java APK
+        uses: actions/download-artifact@v4
+        with:
+          name: NFC-eMoney-Reader-NativeJava-APK
+          path: release-files
+
+      - name: 🚀 Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

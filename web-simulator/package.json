@@ -1,0 +1,21 @@
+{
+  "name": "nfc-emoney-web-simulator",
+  "version": "1.0.0",
+  "description": "Web Simulator interaktif untuk Aplikasi Cek Saldo e-Money (NFC) Indonesia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "nfc",
+    "emoney",
+    "simulator",
+    "mandiri",
+    "bca-flazz",
+    "bni-tapcash",
+    "bri-brizzi",
+    "jakcard"
+  ],
+  "author": "Antigravity Team",
+  "license": "MIT"
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Izin untuk NFC -->
+    <uses-permission android:name="android.permission.NFC" />
+    
+    <!-- Izin untuk Getar (Haptic Feedback) saat kartu terbaca -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Feature NFC (required false agar tetap bisa diinstal di device non-NFC untuk keperluan demo/tes) -->
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_nfc_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_nfc_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NfcEMoneyReader">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Menangkap Kartu NFC yang ditempelkan saat aplikasi tidak aktif atau aktif -->
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+                <action android:name="android.nfc.action.TAG_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_tech_filter" />
+
+        </activity>
+    </application>
+
+</manifest>

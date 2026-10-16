@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Cek Saldo e-Money",
+    "slug": "nfc-emoney-reader",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#07090E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emoney.nfcbalance"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#07090E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.emoney.nfcbalance",
+      "permissions": [
+        "android.permission.NFC",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "react-native-nfc-manager"
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

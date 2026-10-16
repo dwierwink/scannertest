@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulator Cek Saldo e-Money (NFC) - Web Interactive</title>
+  <meta name="description" content="Simulator interaktif berbasis web untuk aplikasi Cek Saldo Kartu e-Money (Mandiri, BCA Flazz, BNI TapCash, BRI Brizzi, JakCard) dengan simulasi tap NFC, audio POS bip, dan APDU protocol inspector.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            <circle cx="12" cy="8" r="2" />
+          </svg>
+          <div class="icon-pulse"></div>
+        </div>
+        <div>
+          <h1 class="brand-title">Simulator Cek Saldo e-Money NFC</h1>
+          <p class="brand-subtitle">Simulasi Interaktif Kartu Mandiri • Flazz • TapCash • Brizzi • JakCard</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- SFX Toggle -->
+        <button id="btnToggleSound" class="control-btn active" title="Nyalakan/Matikan Suara Beep POS">
+          <span class="icon">🔊</span>
+          <span class="label">Bip POS: ON</span>
+        </button>
+
+        <!-- Haptic / Vibration Toggle -->
+        <button id="btnToggleVibrate" class="control-btn active" title="Nyalakan/Matikan Efek Getar">
+          <span class="icon">📳</span>
+          <span class="label">Getar: ON</span>
+        </button>
+
+        <!-- NFC Toggle (Hardware state) -->
+        <button id="btnToggleNfcHardware" class="control-btn" title="Simulasi Pengaturan NFC HP">
+          <span class="icon">📡</span>
+          <span class="label" id="lblNfcHardware">NFC HP: ON</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Simulator Layout -->
+  <main class="main-container">
+    
+    <!-- LEFT PANEL: Smartphone Frame & App View -->
+    <section class="device-section">
+      <div class="section-title-wrap">
+        <span class="badge-pill">Virtual Device</span>
+        <h2>Smartphone Display (Android)</h2>
+        <p class="section-desc">Tampilan aplikasi e-money reader persis seperti pada smartphone Android fisik.</p>
+      </div>
+
+      <!-- Smartphone Frame Container -->
+      <div class="phone-mockup-wrapper">
+        <div class="phone-case" id="phoneCase">
+          <!-- Side buttons on phone frame -->
+          <div class="phone-btn phone-btn-vol-up"></div>
+          <div class="phone-btn phone-btn-vol-down"></div>
+          <div class="phone-btn phone-btn-power"></div>
+
+          <!-- NFC Antenna Zone Indicator (Rear sensor) -->
+          <div class="phone-antenna-zone" id="antennaZone">
+            <div class="antenna-tag">
+              <span class="pulse-dot"></span>
+              SENSOR NFC AKTIF (TEMPELKAN KARTU DISINI)
+            </div>
+          </div>
+
+          <!-- Phone Screen -->
+          <div class="phone-screen" id="phoneDropTarget">
+            
+            <!-- Android System Status Bar -->
+            <div class="phone-status-bar">
+              <span class="status-time" id="statusClock">12:45</span>
+              <div class="camera-punch"></div>
+              <div class="status-icons">
+                <span class="icon-wifi">
+                  <svg width="14" height="12" viewBox="0 0 16 12" fill="currentColor">
+                    <path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-4.24-3.24a6 6 0 018.48 0l1.42-1.42a8 8 0 00-11.32 0l1.42 1.42zm-2.83-2.83a10 10 0 0114.14 0l1.42-1.42a12 12 0 00-16.98 0l1.42 1.42z"/>
+                  </svg>
+                </span>
+                <span class="icon-signal">5G</span>
+                <span class="icon-battery">
+                  <span class="battery-body"><span class="battery-level"></span></span>
+                  <span class="battery-tip"></span>
+                </span>
+              </div>
+            </div>
+
+            <!-- In-App Header -->
+            <div class="app-top-bar">
+              <div class="app-header-texts">
+                <h3 class="app-title">Cek Saldo e-Money</h3>
+                <span class="app-subtitle">Tempelkan kartu di belakang HP</span>
+              </div>
+              <div class="nfc-status-chip chip-active" id="phoneNfcChip" title="Klik untuk beralih status NFC">
+                <span class="chip-dot"></span>
+                <span id="phoneNfcChipText">NFC Aktif</span>
+              </div>
+            </div>
+
+            <!-- Alert: NFC Disabled Banner -->
+            <div class="nfc-disabled-banner" id="nfcDisabledBanner" style="display: none;">
+              <div class="banner-icon">⚠️</div>
+              <div class="banner-content">
+                <h4>NFC Tidak Aktif</h4>
+                <p>NFC di smartphone Anda saat ini mati. Harap aktifkan untuk membaca kartu.</p>
+                <button id="btnEnableNfcInPhone" class="btn-enable-nfc">Nyalakan NFC</button>
+              </div>
+            </div>
+
+            <!-- Scrollable App Content -->
+            <div class="phone-content-scroll" id="phoneContentScroll">
+
+              <!-- STATE 1: SCAN PROMPT / RADAR (Default) -->
+              <div class="scan-prompt-layout" id="viewScanPrompt">
+                <div class="radar-container" id="radarTriggerZone" title="Klik atau tempelkan kartu di sini">
+                  <div class="radar-pulse radar-pulse-3"></div>
+                  <div class="radar-pulse radar-pulse-2"></div>
+                  <div class="radar-pulse radar-pulse-1"></div>
+                  <div class="radar-center-circle">
+                    <svg class="radar-nfc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                      <circle cx="12" cy="8" r="2" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="scan-texts">
+                  <h4 class="scan-heading">Siap Memindai Kartu</h4>
+                  <p class="scan-subheading">Dekatkan kartu uang elektronik Anda ke sensor NFC di belakang bodi smartphone.</p>
+                </div>
+
+                <div class="quick-sim-action">
+                  <button id="btnQuickSimulate" class="btn-primary-ghost">
+                    <span>⚡ Simulasi Tap Acak</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STATE 2: CARD RESULT VIEW -->
+              <div class="card-result-layout" id="viewCardResult" style="display: none;">
+                
+                <!-- Digital Physical Card Preview -->
+                <div class="card-graphic-container" id="cardGraphic">
+                  <div class="card-glass-shine"></div>
+                  
+                  <div class="card-head-row">
+                    <div class="card-issuer-badge" id="resCardIssuer">Mandiri e-Money</div>
+                    <div class="card-emv-chip">
+                      <div class="chip-lines"></div>
+                    </div>
+                  </div>
+
+                  <div class="card-balance-block">
+                    <span class="balance-label">SISA SALDO KARTU</span>
+                    <div class="balance-value" id="resCardBalance">Rp 85.000</div>
+                  </div>
+
+                  <div class="card-foot-row">
+                    <div class="card-number-mono" id="resCardNumber">6032 •••• •••• 8192</div>
+                    <div class="card-tech-tag" id="resCardTech">ISO 14443-4</div>
+                  </div>
+                </div>
+
+                <!-- Action buttons: Copy & Rescan -->
+                <div class="card-result-actions">
+                  <button id="btnCopyCardNumber" class="btn-action-outline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    <span id="lblCopyNumber">Salin Nomor</span>
+                  </button>
+                  <button id="btnScanAgain" class="btn-action-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 4v6h-6"/>
+                      <path d="M1 20v-6h6"/>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    <span>Pindai Ulang</span>
+                  </button>
+                </div>
+
+                <!-- Simulation Quick Operations (Toll tap & Top up) -->
+                <div class="sim-card-ops">
+                  <div class="ops-header">Simulasi Transaksi Kartu:</div>
+                  <div class="ops-grid">
+                    <button class="op-btn" id="btnSimToll" title="Simulasi tap gerbang tol">
+                      🚗 Tap Tol (-Rp 10.500)
+                    </button>
+                    <button class="op-btn" id="btnSimTransit" title="Simulasi tap KRL / Transjakarta">
+                      🚆 Tap KRL (-Rp 3.000)
+                    </button>
+                    <button class="op-btn" id="btnSimTopUp" title="Simulasi isi saldo">
+                      💳 Top Up (+Rp 50.000)
+                    </button>
+                  </div>
+                </div>
+
+                <!-- SAM Encryption Notice (Shown when card is encrypted) -->
+                <div class="security-banner" id="resSecurityBanner" style="display: none;">
+                  <span class="sec-icon">🔒</span>
+                  <div class="sec-text">
+                    <strong>Saldo Terproteksi Enkripsi Bank (SAM/HSM)</strong>
+                    <p>Sektor saldo kartu ini diproteksi oleh kunci kriptografi perbankan. UID fisik kartu tetap berhasil dibaca.</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- History Section inside phone -->
+              <div class="phone-history-section">
+                <div class="history-header">
+                  <span class="history-title">Riwayat Pengecekan</span>
+                  <button id="btnClearHistory" class="btn-text-danger">Hapus</button>
+                </div>
+
+                <div class="history-list" id="historyListContainer">
+                  <!-- Populated by Javascript -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Interactive Card Wallet Deck & Terminal Console -->
+    <section class="control-section">
+      
+      <!-- WALLET DECK: Selectable & Draggable NFC Cards -->
+      <div class="deck-container">
+        <div class="section-title-wrap">
+          <span class="badge-pill accent">Dompet Kartu Virtual</span>
+          <h2>Pilih / Seret Kartu e-Money</h2>
+          <p class="section-desc">Klik kartu untuk menempelkan (*Tap*) ke smartphone, atau seret langsung kartu ke area NFC smartphone.</p>
+        </div>
+
+        <div class="cards-rack" id="cardsRack">
+          <!-- Cards injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- CUSTOM CARD MAKER MODAL / ACCORDION -->
+      <div class="custom-card-box">
+        <div class="custom-header">
+          <div class="custom-title">
+            <span class="icon">✨</span>
+            <h3>Buat Kartu Kustom Anda Sendiri</h3>
+          </div>
+          <button id="btnToggleCustomForm" class="btn-sm-ghost">Buka Form ▾</button>
+        </div>
+
+        <form id="formCustomCard" class="custom-form" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inpCardBank">Penerbit Bank / Merk:</label>
+              <select id="inpCardBank" class="form-select">
+                <option value="Mandiri e-Money">Mandiri e-Money</option>
+                <option value="BCA Flazz">BCA Flazz (Gen 2)</option>
+                <option value="BNI TapCash">BNI TapCash</option>
+                <option value="BRI Brizzi">BRI Brizzi</option>
+                <option value="Bank DKI JakCard">Bank DKI JakCard</option>
+                <option value="KMT Kereta Api">KMT Commuter Line</option>
+                <option value="Tag NFC Kustom">Tag NFC Kustom Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inpCardBalance">Saldo Kartu (Rp):</label>
+              <input type="number" id="inpCardBalance" class="form-input" value="150000" step="5000" min="0" max="2000000">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inpCardNumber">Nomor Kartu (16 Digit):</label>
+              <input type="text" id="inpCardNumber" class="form-input font-mono" value="6032 8821 4402 1928" maxlength="19">
+            </div>
+            <div class="form-group">
+              <label for="inpCardUid">UID Hex:</label>
+              <input type="text" id="inpCardUid" class="form-input font-mono" value="04:A2:38:B1:92:44" maxlength="23">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="inpCardEncrypted">
+                <span>Simulasikan Kartu Terenkripsi SAM (Saldo Dikunci Bank)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-create-tap">
+              <span>💳 Buat & Tempelkan Kartu Ini</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- WEB NFC REAL SCANNER STATUS (Chrome Android) -->
+      <div class="webnfc-box" id="webNfcBox">
+        <div class="webnfc-header">
+          <div class="webnfc-badge" id="webNfcBadge">
+            <span class="badge-dot"></span>
+            <span id="webNfcStatusText">Mengecek Dukungan Web NFC...</span>
+          </div>
+          <button id="btnRealWebNfcScan" class="btn-webnfc" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>Scan Kartu Fisik Nyata</span>
+          </button>
+        </div>
+        <p class="webnfc-desc" id="webNfcDesc">
+          Jika simulator ini dibuka pada browser Google Chrome di HP Android dengan fitur NFC, Anda dapat menempelkan kartu fisik asli langsung ke bodi HP!
+        </p>
+      </div>
+
+      <!-- APDU & NFC PROTOCOL LOG CONSOLE -->
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="terminal-title">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+            <span class="term-name">Live APDU / NFC Handshake Protocol Console</span>
+          </div>
+          <div class="terminal-actions">
+            <button id="btnClearConsole" class="btn-term-action">Bersihkan</button>
+            <button id="btnCopyConsole" class="btn-term-action">Salin Log</button>
+          </div>
+        </div>
+        <div class="terminal-body font-mono" id="terminalBody">
+          <div class="term-line info">[INIT] Simulator siap. Silakan klik atau seret salah satu kartu di atas.</div>
+          <div class="term-line info">[SYS] Web Audio POS Synthesizer diaktifkan (2.4kHz Bip).</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Audio elements & Script -->
+  <script src="app.js"></script>
+</body>
+</html>

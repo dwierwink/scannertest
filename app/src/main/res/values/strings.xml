@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cek Saldo e-Money</string>
+    <string name="header_subtitle">Tempelkan kartu di belakang HP untuk cek saldo</string>
+
+    <!-- Status NFC -->
+    <string name="nfc_ready_title">NFC Siap Digunakan</string>
+    <string name="nfc_ready_desc">Tempelkan kartu e-money Anda di area NFC smartphone ini</string>
+    <string name="nfc_reading">Sedang membaca kartu...</string>
+    <string name="nfc_disabled_title">NFC Belum Aktif</string>
+    <string name="nfc_disabled_desc">Silakan aktifkan fitur NFC di Pengaturan perangkat Anda</string>
+    <string name="btn_enable_nfc">Aktifkan NFC</string>
+    <string name="nfc_unsupported_title">NFC Tidak Didukung</string>
+    <string name="nfc_unsupported_desc">Perangkat ini tidak memiliki perangkat keras NFC</string>
+
+    <!-- Card Details -->
+    <string name="card_balance_label">Sisa Saldo Kartu</string>
+    <string name="card_number_label">Nomor Kartu / UID</string>
+    <string name="card_type_label">Jenis Kartu</string>
+    <string name="card_tech_label">Teknologi Cip</string>
+    <string name="last_scanned_label">Waktu Pindai Terakhir</string>
+    <string name="btn_copy_card">Salin Nomor</string>
+    <string name="copied_to_clipboard">Nomor kartu berhasil disalin!</string>
+    
+    <!-- Supported Cards -->
+    <string name="card_mandiri">Mandiri e-Money</string>
+    <string name="card_flazz">BCA Flazz</string>
+    <string name="card_tapcash">BNI TapCash</string>
+    <string name="card_brizzi">BRI Brizzi</string>
+    <string name="card_jakcard">Bank DKI JakCard</string>
+    <string name="card_generic">Kartu NFC / SmartCard</string>
+
+    <!-- Protection / Security note -->
+    <string name="security_protected_title">Saldo Terenkripsi</string>
+    <string name="security_protected_desc">Kartu ini dilindungi enkripsi keamanan bank (SAM/HSM). Data nomor kartu dan UID berhasil dibaca.</string>
+
+    <!-- History -->
+    <string name="history_title">Riwayat Pengecekan</string>
+    <string name="history_empty">Belum ada kartu yang dipindai</string>
+    <string name="btn_clear_history">Hapus Riwayat</string>
+    <string name="confirm_clear_history">Hapus semua riwayat pemindaian?</string>
+    <string name="btn_cancel">Batal</string>
+    <string name="btn_clear">Hapus</string>
+
+    <!-- Demo / Test mode -->
+    <string name="btn_simulate_tap">Tes Simulasi Tap Kartu</string>
+    <string name="sim_note">Gunakan tombol simulasi ini untuk menguji tampilan tanpa kartu fisik</string>
+</resources>

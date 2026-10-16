@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootCoordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FE">
+
+    <!-- MAIN SCROLLABLE CONTENT -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="36dp"
+            android:paddingBottom="90dp">
+
+            <!-- Top Navigation Row -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/btnNavBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="‹"
+                    android:textColor="#1E1B4B"
+                    android:textSize="32sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/btnSkipOrAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Info APDU"
+                    android:textColor="#6366F1"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <!-- ========================================================
+                 STATE 1: EMPTY HOME SCREEN (Screen 1 Reference)
+                 ======================================================== -->
+            <LinearLayout
+                android:id="@+id/layoutStateHome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Payment Options"
+                    android:textColor="#0F172A"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="28dp" />
+
+                <!-- Center Circular Pastel Illustration -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:layout_marginVertical="24dp">
+
+                    <FrameLayout
+                        android:layout_width="220dp"
+                        android:layout_height="220dp"
+                        android:background="@drawable/bg_empty_circle">
+
+                        <!-- Ghost Card Graphic -->
+                        <View
+                            android:layout_width="120dp"
+                            android:layout_height="76dp"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="25dp"
+                            android:background="@drawable/bg_ghost_card" />
+
+                        <!-- Staked Coin Text -->
+                        <TextView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:layout_gravity="bottom|start"
+                            android:layout_marginStart="44dp"
+                            android:layout_marginBottom="36dp"
+                            android:background="@drawable/bg_coin_circle"
+                            android:gravity="center"
+                            android:text="$"
+                            android:textColor="#8A97E8"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <!-- Question mark -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|end"
+                            android:layout_marginEnd="55dp"
+                            android:layout_marginBottom="60dp"
+                            android:text="?"
+                            android:textColor="#8A97E8"
+                            android:textSize="32sp"
+                            android:textStyle="bold" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="Payment methods empty"
+                        android:textColor="#1E293B"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:paddingHorizontal="16dp"
+                        android:text="Belum ada kartu e-money terhubung. Tekan tombol scan di bawah untuk membaca kartu Mandiri, Flazz, TapCash, atau Brizzi secara offline."
+                        android:textColor="#64748B"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Prominent Scan Action Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMainScanNfc"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="32dp"
+                    android:backgroundTint="#6366F1"
+                    android:text="Pindai Kartu e-Money (NFC)"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
+
+            <!-- ========================================================
+                 STATE 2: CARD DETAILS & 3D FANNED DECK (Screen 2 Reference)
+                 ======================================================== -->
+            <LinearLayout
+                android:id="@+id/layoutStateResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <!-- 3D Fanned Cards Container -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:layout_marginVertical="8dp">
+
+                    <!-- Back Card Left (Tilted) -->
+                    <View
+                        android:layout_width="155dp"
+                        android:layout_height="220dp"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="65dp"
+                        android:rotation="-14"
+                        android:background="@drawable/bg_fanned_back_card" />
+
+                    <!-- Back Card Right (Tilted) -->
+                    <View
+                        android:layout_width="155dp"
+                        android:layout_height="220dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="65dp"
+                        android:rotation="14"
+                        android:background="@drawable/bg_fanned_back_card" />
+
+                    <!-- Front Portrait Card (Deep Navy / Bank Gradient) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardFrontPortrait"
+                        android:layout_width="165dp"
+                        android:layout_height="230dp"
+                        android:layout_gravity="center"
+                        app:cardBackgroundColor="#0F172A"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="12dp">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="16dp">
+
+                            <!-- Rotated Name on Card -->
+                            <TextView
+                                android:id="@+id/tvFrontCardHolder"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:rotation="90"
+                                android:text="Sarah Smith"
+                                android:textColor="#94A3B8"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <!-- EMV Chip & Contactless Waves Top Right -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:gravity="end"
+                                android:orientation="vertical">
+
+                                <View
+                                    android:layout_width="32dp"
+                                    android:layout_height="24dp"
+                                    android:background="@drawable/bg_chip_mini" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:rotation="90"
+                                    android:text="))))"
+                                    android:textColor="#94A3B8"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <!-- Dual Circle Logo Bottom Right -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_alignParentBottom="true"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:background="@drawable/circle_red" />
+
+                                <View
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_marginStart="-6dp"
+                                    android:background="@drawable/circle_orange" />
+                            </LinearLayout>
+                        </RelativeLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </FrameLayout>
+
+                <!-- Sensor NFC Icon Below Cards -->
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_marginVertical="10dp"
+                    android:src="@drawable/ic_nfc_scan"
+                    app:tint="#CBD5E1" />
+
+                <!-- Highlighted Rupiah Balance Display -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#E2E8F0"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tvResultIssuerLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SISA SALDO KARTU (Mandiri e-Money):"
+                            android:textColor="#6366F1"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvResultBalanceAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Rp 85.000"
+                            android:textColor="#0F172A"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Form Fields (Matching Screen 2 Reference) -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card Number"
+                    android:textColor="#64748B"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    app:boxCornerRadiusBottomEnd="14dp"
+                    app:boxCornerRadiusBottomStart="14dp"
+                    app:boxCornerRadiusTopEnd="14dp"
+                    app:boxCornerRadiusTopStart="14dp"
+                    app:boxStrokeColor="#E2E8F0">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etResultCardNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:editable="false"
+                        android:focusable="false"
+                        android:fontFamily="monospace"
+                        android:text="6032 0182 9381 8192"
+                        android:textColor="#0F172A"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name on Card"
+                    android:textColor="#64748B"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:boxCornerRadiusBottomEnd="14dp"
+                    app:boxCornerRadiusBottomStart="14dp"
+                    app:boxCornerRadiusTopEnd="14dp"
+                    app:boxCornerRadiusTopStart="14dp"
+                    app:boxStrokeColor="#E2E8F0">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etResultCardHolder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:editable="false"
+                        android:focusable="false"
+                        android:text="Sarah Smith"
+                        android:textColor="#0F172A"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Supported Networks Row -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Supported Networks: Mandiri • Flazz • TapCash • Brizzi"
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Action Button Continue / Rescan -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContinueOrRescan"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:backgroundTint="#6366F1"
+                    android:text="Continue"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Button (FAB) at Bottom Right (Matching Screen 1 Reference) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabScan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:backgroundTint="#6366F1"
+        android:contentDescription="Scan NFC"
+        app:elevation="8dp"
+        app:srcCompat="@drawable/ic_card_scan_fab"
+        app:tint="#FFFFFF" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

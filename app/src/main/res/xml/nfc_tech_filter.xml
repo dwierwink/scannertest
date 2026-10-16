@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Filter untuk kartu ISO 14443-4 (e-money, Flazz, Brizzi, TapCash modern) -->
+    <tech-list>
+        <tech>android.nfc.tech.IsoDep</tech>
+    </tech-list>
+    
+    <!-- Filter untuk kartu NFC-A standar -->
+    <tech-list>
+        <tech>android.nfc.tech.NfcA</tech>
+    </tech-list>
+
+    <!-- Filter untuk kartu Mifare Classic (Kartu parkir, akses, flazz gen lama) -->
+    <tech-list>
+        <tech>android.nfc.tech.MifareClassic</tech>
+    </tech-list>
+
+    <!-- Filter untuk kartu Mifare Ultralight -->
+    <tech-list>
+        <tech>android.nfc.tech.MifareUltralight</tech>
+    </tech-list>
+
+    <!-- Filter untuk tag NDEF -->
+    <tech-list>
+        <tech>android.nfc.tech.Ndef</tech>
+    </tech-list>
+</resources>

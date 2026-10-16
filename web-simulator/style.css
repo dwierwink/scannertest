@@ -1,0 +1,1481 @@
+/* ========================================================
+   SIMULATOR CEK SALDO E-MONEY (NFC) - DESIGN SYSTEM
+   Modern Dark Glassmorphism, Fluid 3D Aesthetics & Micro-interactions
+   ======================================================== */
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Color Palette */
+  --bg-dark: #07090E;
+  --bg-surface: #0E131F;
+  --bg-card: rgba(19, 26, 43, 0.75);
+  --bg-card-hover: rgba(28, 38, 64, 0.85);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(56, 189, 248, 0.25);
+
+  /* Primary Accent: Electric Cyan / Indigo */
+  --primary: #0EA5E9;
+  --primary-glow: rgba(14, 165, 233, 0.35);
+  --primary-light: #38BDF8;
+  --primary-dark: #0284C7;
+
+  /* Status Colors */
+  --success: #10B981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --warning: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --danger: #EF4444;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+
+  /* Text Colors */
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+
+  /* Bank Brand Colors */
+  --bank-mandiri-start: #003B73;
+  --bank-mandiri-end: #091D34;
+  --bank-bca-start: #005E9E;
+  --bank-bca-end: #002244;
+  --bank-bni-start: #E05305;
+  --bank-bni-end: #5A1E00;
+  --bank-bri-start: #00529C;
+  --bank-bri-end: #001F3F;
+  --bank-dki-start: #DC2626;
+  --bank-dki-end: #450A0A;
+  --bank-sam-start: #334155;
+  --bank-sam-end: #0F172A;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --transition-fast: 0.18s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base Reset & Typography */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* Ambient Backdrops */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+.glow-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #0284c7 0%, transparent 70%);
+  top: -100px;
+  left: 10%;
+}
+
+.glow-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  bottom: -150px;
+  right: 5%;
+}
+
+/* ========================================================
+   HEADER & NAVBAR
+   ======================================================== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7, 9, 14, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 28px;
+}
+
+.header-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #0EA5E9 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.brand-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-pulse {
+  position: absolute;
+  inset: -3px;
+  border-radius: 17px;
+  border: 2px solid var(--primary-light);
+  animation: miniPing 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  opacity: 0.6;
+}
+
+@keyframes miniPing {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  75%, 100% { transform: scale(1.25); opacity: 0; }
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to right, #FFFFFF, #BAE6FD);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.active {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: var(--primary);
+  color: #BAE6FD;
+}
+
+.control-btn.disabled-state {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--danger);
+  color: #FCA5A5;
+}
+
+/* ========================================================
+   MAIN LAYOUT GRID
+   ======================================================== */
+.main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 36px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1060px) {
+  .main-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+/* Section Header Typography */
+.section-title-wrap {
+  margin-bottom: 20px;
+}
+
+.section-title-wrap h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 6px 0 4px;
+}
+
+.section-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.badge-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge-pill.accent {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border-color: rgba(192, 132, 252, 0.3);
+}
+
+/* ========================================================
+   SMARTPHONE FRAME (DEVICE MOCKUP)
+   ======================================================== */
+.device-section {
+  width: 100%;
+  max-width: 440px;
+}
+
+.phone-mockup-wrapper {
+  position: relative;
+  perspective: 1000px;
+}
+
+.phone-case {
+  background: #111624;
+  border: 10px solid #1E2738;
+  box-shadow: 
+    0 25px 60px -15px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 46px;
+  padding: 8px;
+  position: relative;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+/* Side Phone Hardware Buttons */
+.phone-btn {
+  position: absolute;
+  background: #1E2738;
+  border-radius: 4px;
+}
+.phone-btn-vol-up {
+  left: -14px;
+  top: 110px;
+  width: 4px;
+  height: 46px;
+}
+.phone-btn-vol-down {
+  left: -14px;
+  top: 168px;
+  width: 4px;
+  height: 46px;
+}
+.phone-btn-power {
+  right: -14px;
+  top: 130px;
+  width: 4px;
+  height: 60px;
+}
+
+/* Antenna Sensing Zone Hint on rear / top of phone */
+.phone-antenna-zone {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.antenna-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 165, 233, 0.9);
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 4px 15px rgba(14, 165, 233, 0.5);
+  white-space: nowrap;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  animation: pulseDotAnim 1.2s infinite;
+}
+
+@keyframes pulseDotAnim {
+  0% { transform: scale(0.8); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+  100% { transform: scale(0.8); opacity: 1; }
+}
+
+/* Drag over active state on phone */
+.phone-case.drag-target-active {
+  box-shadow: 
+    0 0 0 4px var(--primary),
+    0 25px 60px rgba(14, 165, 233, 0.4);
+  transform: scale(1.015);
+}
+
+/* Phone Screen (Glass Layer) */
+.phone-screen {
+  background: #0B0E14;
+  border-radius: 34px;
+  overflow: hidden;
+  height: 730px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+/* Android Status Bar */
+.phone-status-bar {
+  height: 38px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  z-index: 10;
+  background: rgba(11, 14, 20, 0.95);
+}
+
+.camera-punch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #000000;
+  border: 1.5px solid #1E293B;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-battery {
+  display: inline-flex;
+  align-items: center;
+}
+
+.battery-body {
+  width: 18px;
+  height: 9px;
+  border: 1px solid var(--text-muted);
+  border-radius: 2px;
+  padding: 1px;
+}
+
+.battery-level {
+  display: block;
+  width: 90%;
+  height: 100%;
+  background: var(--text-muted);
+  border-radius: 1px;
+}
+
+.battery-tip {
+  width: 2px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 0 1px 1px 0;
+}
+
+/* App Bar inside the simulated phone */
+.app-top-bar {
+  padding: 16px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.app-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.app-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+/* NFC Status Chip */
+.nfc-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.nfc-status-chip.chip-active {
+  background: var(--success-bg);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.nfc-status-chip.chip-inactive {
+  background: var(--danger-bg);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Alert banner inside phone if NFC is disabled */
+.nfc-disabled-banner {
+  margin: 14px 18px 0;
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: 12px;
+}
+
+.banner-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.banner-content h4 {
+  font-size: 0.85rem;
+  color: #F87171;
+  font-weight: 700;
+}
+
+.banner-content p {
+  font-size: 0.74rem;
+  color: #CBD5E1;
+  margin: 3px 0 8px;
+}
+
+.btn-enable-nfc {
+  background: var(--danger);
+  color: #FFFFFF;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Phone Scrollable Content */
+.phone-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.phone-content-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.phone-content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* ========================================================
+   RADAR SCAN PROMPT (STATE 1)
+   ======================================================== */
+.scan-prompt-layout {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 30px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-smooth);
+}
+
+.radar-container {
+  width: 170px;
+  height: 170px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.radar-pulse {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary);
+  opacity: 0;
+  animation: radarRipple 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.radar-pulse-1 {
+  width: 100px;
+  height: 100px;
+  animation-delay: 0s;
+}
+
+.radar-pulse-2 {
+  width: 135px;
+  height: 135px;
+  animation-delay: 0.9s;
+}
+
+.radar-pulse-3 {
+  width: 170px;
+  height: 170px;
+  animation-delay: 1.8s;
+}
+
+@keyframes radarRipple {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  50% { opacity: 0.3; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+.radar-center-circle {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%);
+  border: 1.5px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 25px var(--primary-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: transform var(--transition-fast);
+}
+
+.radar-container:hover .radar-center-circle {
+  transform: scale(1.08);
+}
+
+.radar-nfc-icon {
+  width: 36px;
+  height: 36px;
+  color: #38BDF8;
+}
+
+.scan-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.scan-subheading {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.4;
+  margin: 0 auto 16px;
+}
+
+.btn-primary-ghost {
+  background: rgba(14, 165, 233, 0.1);
+  border: 1.5px solid var(--primary);
+  color: #38BDF8;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary-ghost:hover {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* ========================================================
+   CARD RESULT VIEW (STATE 2)
+   ======================================================== */
+.card-result-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: cardResultFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardResultFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Simulated Physical Card Graphic */
+.card-graphic-container {
+  width: 100%;
+  height: 195px;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: background 0.4s ease, transform var(--transition-smooth);
+}
+
+.card-glass-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+.card-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.card-issuer-badge {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* EMV Microchip Graphic */
+.card-emv-chip {
+  width: 38px;
+  height: 28px;
+  background: linear-gradient(135deg, #FDE68A 0%, #D97706 50%, #F59E0B 100%);
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.chip-lines {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(146, 64, 14, 0.5);
+  background-image: 
+    linear-gradient(to right, transparent 40%, rgba(146,64,14,0.4) 40%, rgba(146,64,14,0.4) 60%, transparent 60%),
+    linear-gradient(to bottom, transparent 40%, rgba(146,64,14,0.4) 40%, rgba(146,64,14,0.4) 60%, transparent 60%);
+}
+
+.card-balance-block {
+  position: relative;
+  z-index: 1;
+}
+
+.balance-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #BAE6FD;
+  text-transform: uppercase;
+}
+
+.balance-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.card-foot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.card-number-mono {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #F1F5F9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.card-tech-tag {
+  font-size: 0.64rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+/* Card Action Buttons */
+.card-result-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btn-action-outline, .btn-action-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-action-outline {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: #E2E8F0;
+}
+
+.btn-action-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-action-primary {
+  background: var(--primary);
+  border: none;
+  color: #FFFFFF;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.btn-action-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+/* Quick Simulation Operations */
+.sim-card-ops {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.ops-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.ops-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+
+.op-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 6px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all var(--transition-fast);
+}
+
+.op-btn:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: var(--primary);
+  color: #BAE6FD;
+}
+
+/* Security Notice */
+.security-banner {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.sec-icon {
+  font-size: 1.1rem;
+}
+
+.sec-text strong {
+  font-size: 0.76rem;
+  color: #FCD34D;
+  display: block;
+}
+
+.sec-text p {
+  font-size: 0.7rem;
+  color: #E2E8F0;
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+/* Scan History in Phone */
+.phone-history-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.history-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn-text-danger {
+  background: none;
+  border: none;
+  color: #F87171;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-text-danger:hover {
+  text-decoration: underline;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-empty-text {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.history-card-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.history-card-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(2px);
+}
+
+.history-item-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.hist-bank-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.hist-card-sub {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.history-item-right {
+  text-align: right;
+}
+
+.hist-card-balance {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #38BDF8;
+}
+
+.hist-time {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  display: block;
+}
+
+/* ========================================================
+   RIGHT PANEL: INTERACTIVE WALLET DECK & CONTROLS
+   ======================================================== */
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Cards Rack Grid */
+.cards-rack {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Wallet Card Item */
+.deck-card {
+  height: 165px;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.deck-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.7), 0 0 20px var(--border-glow);
+}
+
+.deck-card:active {
+  cursor: grabbing;
+}
+
+.deck-card.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+/* Bank-specific gradient backgrounds */
+.bg-mandiri {
+  background: linear-gradient(135deg, var(--bank-mandiri-start) 0%, var(--bank-mandiri-end) 100%);
+  border: 1px solid rgba(253, 230, 138, 0.25);
+}
+.bg-bca {
+  background: linear-gradient(135deg, var(--bank-bca-start) 0%, var(--bank-bca-end) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.bg-bni {
+  background: linear-gradient(135deg, var(--bank-bni-start) 0%, var(--bank-bni-end) 100%);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+.bg-bri {
+  background: linear-gradient(135deg, var(--bank-bri-start) 0%, var(--bank-bri-end) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+.bg-dki {
+  background: linear-gradient(135deg, var(--bank-dki-start) 0%, var(--bank-dki-end) 100%);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.bg-sam {
+  background: linear-gradient(135deg, var(--bank-sam-start) 0%, var(--bank-sam-end) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.deck-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.deck-card-bank {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.deck-card-chip {
+  width: 28px;
+  height: 20px;
+  background: linear-gradient(135deg, #FDE68A 0%, #D97706 100%);
+  border-radius: 4px;
+}
+
+.deck-card-balance {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.deck-card-balance-sub {
+  font-size: 0.65rem;
+  color: #E2E8F0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deck-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.deck-card-num {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #CBD5E1;
+}
+
+.btn-tap-deck {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.btn-tap-deck:hover {
+  background: #FFFFFF;
+  color: #0F172A;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================================
+   CUSTOM CARD CREATOR FORM
+   ======================================================== */
+.custom-card-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.custom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-title h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.btn-sm-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.custom-form {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.form-select, .form-input {
+  width: 100%;
+  background: #070A10;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.form-select:focus, .form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-group input {
+  accent-color: var(--primary);
+}
+
+.btn-create-tap {
+  width: 100%;
+  background: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);
+  border: none;
+  color: #FFFFFF;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px var(--primary-glow);
+  transition: all var(--transition-fast);
+}
+
+.btn-create-tap:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* ========================================================
+   WEB NFC REAL SCANNER STATUS BOX
+   ======================================================== */
+.webnfc-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.webnfc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.webnfc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+
+.badge-dot.supported {
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.btn-webnfc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--success);
+  color: #34D399;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-webnfc:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--border-subtle);
+  color: var(--text-dim);
+}
+
+.webnfc-desc {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* ========================================================
+   LIVE APDU / PROTOCOL TERMINAL
+   ======================================================== */
+.terminal-box {
+  background: #05070B;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.terminal-header {
+  background: #0B0F17;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.term-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.term-dot.red { background: #EF4444; }
+.term-dot.yellow { background: #F59E0B; }
+.term-dot.green { background: #10B981; }
+
+.term-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.terminal-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-term-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-term-action:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.terminal-body {
+  height: 180px;
+  overflow-y: auto;
+  padding: 12px 16px;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: #CBD5E1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.terminal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.term-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.term-line.info { color: #94A3B8; }
+.term-line.cyan { color: #38BDF8; font-weight: 600; }
+.term-line.amber { color: #FCD34D; }
+.term-line.green { color: #4ADE80; font-weight: 600; }
+.term-line.red { color: #F87171; }
+
+/* ========================================================
+   TOAST NOTIFICATIONS
+   ======================================================== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border-glow);
+  color: var(--text-main);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================================
+   MOBILE RESPONSIVENESS
+   ======================================================== */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+  .main-container {
+    padding: 16px 12px 40px;
+    gap: 24px;
+  }
+  .phone-screen {
+    height: 640px;
+  }
+  .cards-rack {
+    grid-template-columns: 1fr;
+  }
+}
