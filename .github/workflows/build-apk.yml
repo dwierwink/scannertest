@@ -23,11 +23,8 @@ jobs:
       - name: ☕ Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
-
-      - name: 🤖 Setup Android SDK
-        uses: android-actions/setup-android@v3
 
       - name: 🟢 Setup Node.js 20
         uses: actions/setup-node@v4
@@ -35,11 +32,18 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      - name: 📜 Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: 📦 Install NPM dependencies
         run: npm install
 
       - name: ⚙️ Expo Prebuild (Generate Native Android with NFC Plugin)
         run: npx expo prebuild --platform android --clean
+
+      - name: 🐘 Setup Gradle Cache & Environment
+        uses: gradle/actions/setup-gradle@v3
 
       - name: 🔑 Set gradlew execution permissions
         run: chmod +x android/gradlew
@@ -70,11 +74,15 @@ jobs:
       - name: ☕ Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: 🤖 Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: 📜 Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: 🐘 Setup Gradle Cache & Environment
+        uses: gradle/actions/setup-gradle@v3
 
       - name: 🔑 Set root gradlew permissions
         run: chmod +x ./gradlew
