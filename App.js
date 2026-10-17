@@ -18,7 +18,7 @@ export default function App() {
   // Modal Enter Manually
   const [manualModalVisible, setManualModalVisible] = useState(false);
   const [manualCardNumber, setManualCardNumber] = useState('');
-  const [manualCardName, setManualCardName] = useState('Sarah Smith');
+  const [manualCardName, setManualCardName] = useState('');
   const [manualBank, setManualBank] = useState('Mandiri e-Money');
 
   // Trigger feedback getar (Haptics)
@@ -71,7 +71,7 @@ export default function App() {
       balanceKnown: true,
       cardNumber: formatted,
       rawUid: 'MANUAL_ENTRY',
-      nameOnCard: manualCardName || 'Sarah Smith',
+      nameOnCard: manualCardName || '',
       themeColor: manualBank.includes('BCA') ? '#003A70' : manualBank.includes('BNI') ? '#B43E00' : '#0A1E3F',
       accentColor: '#6366F1',
       history: [],
@@ -188,7 +188,7 @@ export default function App() {
             <TextInput
               value={manualCardName}
               onChangeText={setManualCardName}
-              placeholder="Sarah Smith"
+              placeholder="Nama Pemilik (Opsional)"
               style={tw`bg-slate-50 rounded-xl border border-slate-200 px-4 py-3 text-slate-800 font-semibold text-sm mb-6`}
             />
 

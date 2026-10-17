@@ -14,7 +14,7 @@ import tw from 'twrnc';
  * Dilengkapi penskalaan responsif (auto-scale) agar tidak pernah terpotong di layar HP apa pun.
  */
 export default function FannedCardsDeck({
-  cardholderName = 'Sarah Smith',
+  cardholderName = '',
   cardNumber = '4747 4747 4747 4747',
   cardColor = '#0E1E38',
   bankName = 'Mandiri e-Money',
@@ -142,11 +142,13 @@ export default function FannedCardsDeck({
             },
           ]}
         >
-          <View style={styles.verticalTextWrapper}>
-            <Text style={styles.verticalTextMuted}>
-              {cardholderName}
-            </Text>
-          </View>
+          {cardholderName ? (
+            <View style={styles.verticalTextWrapper}>
+              <Text style={styles.verticalTextMuted}>
+                {cardholderName}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* KARTU 2 (Belakang Kanan - Miring +14 Derajat) */}
@@ -211,12 +213,14 @@ export default function FannedCardsDeck({
             ]}
           />
 
-          {/* Sisi Atas Kiri: Teks Vertikal Nama Pemegang Kartu */}
-          <View style={styles.verticalTextWrapperFront}>
-            <Text numberOfLines={1} style={styles.verticalTextFront}>
-              {cardholderName}
-            </Text>
-          </View>
+          {/* Sisi Atas Kiri: Teks Vertikal Nama Pemegang Kartu (jika ada) */}
+          {cardholderName ? (
+            <View style={styles.verticalTextWrapperFront}>
+              <Text numberOfLines={1} style={styles.verticalTextFront}>
+                {cardholderName}
+              </Text>
+            </View>
+          ) : null}
 
           {/* Sisi Atas Kanan: Chip EMV Emas & Simbol Contactless Waves */}
           <View style={[tw`absolute`, { top: 18, right: 16, alignItems: 'center' }]}>

@@ -27,7 +27,7 @@ export default function CardDetailsScreen({
   onBack,
   onScanAnother,
 }) {
-  const [nameOnCard, setNameOnCard] = useState(cardData?.nameOnCard || 'Sarah Smith');
+  const [nameOnCard, setNameOnCard] = useState(cardData?.nameOnCard || '');
   const [cardNumber, setCardNumber] = useState(cardData?.cardNumber || '4747 4747 4747 4747');
   const [showLogModal, setShowLogModal] = useState(false);
 
@@ -139,7 +139,7 @@ export default function CardDetailsScreen({
                 value={nameOnCard}
                 onChangeText={setNameOnCard}
                 style={tw`text-slate-800 font-semibold text-sm`}
-                placeholder="Sarah Smith"
+                placeholder="Nama Pemilik (Opsional)"
               />
             </View>
           </View>
@@ -196,12 +196,12 @@ export default function CardDetailsScreen({
         </View>
 
         {/* Footer Attribution Pribadi */}
-        <View style={tw`items-center mt-2.5 mb-1`}>
+        <View style={tw`items-center mt-2 mb-1`}>
           <Text
             style={{
               fontFamily: 'Arial',
               fontStyle: 'italic',
-              fontSize: 10.5,
+              fontSize: 8,
               color: '#94A3B8',
               textAlign: 'center',
             }}

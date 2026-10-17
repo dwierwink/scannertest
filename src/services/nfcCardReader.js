@@ -498,7 +498,7 @@ export async function scanRealNfcCard(callbacks = {}) {
         balanceKnown: cardResult.balanceKnown,
         cardNumber: cardResult.rawNumber ? formatCardNumberString(cardResult.rawNumber) : formattedCardNumber,
         rawUid: rawUid,
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         history: cardResult.history || [],
         themeColor: cardResult.themeColor,
         accentColor: cardResult.accentColor,

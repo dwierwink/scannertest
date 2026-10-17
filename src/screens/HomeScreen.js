@@ -164,12 +164,12 @@ export default function HomeScreen({
         </View>
 
         {/* Footer Attribution Pribadi */}
-        <View style={tw`items-center mt-3 mb-1`}>
+        <View style={tw`items-center mt-2.5 mb-1`}>
           <Text
             style={{
               fontFamily: 'Arial',
               fontStyle: 'italic',
-              fontSize: 10.5,
+              fontSize: 8,
               color: '#94A3B8',
               textAlign: 'center',
             }}

@@ -202,7 +202,8 @@ public class MainActivity extends AppCompatActivity {
         layoutStateResult.setVisibility(View.VISIBLE);
         fabScan.setVisibility(View.GONE);
 
-        tvFrontCardHolder.setText("SARAH SMITH");
+        tvFrontCardHolder.setVisibility(View.GONE);
+        tvFrontCardHolder.setText("");
         tvResultIssuerLabel.setText("SALDO CHIP e-MONEY (" + card.getCardName() + "):");
         tvResultBalanceAmount.setText(card.getFormattedBalance());
         etResultCardNumber.setText(card.getCardNumber());

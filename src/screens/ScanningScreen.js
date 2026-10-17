@@ -96,7 +96,7 @@ export default function ScanningScreen({
         balanceKnown: true,
         cardNumber: '6032 0182 9381 8192',
         rawUid: '04A1B2C3D4E5F6',
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         themeColor: '#041B37',
         accentColor: '#F59E0B',
         history: [
@@ -118,7 +118,7 @@ export default function ScanningScreen({
         balanceKnown: true,
         cardNumber: '5241 8802 4491 1042',
         rawUid: '04F2E1D0C9B8A7',
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         themeColor: '#003A70',
         accentColor: '#00D2FF',
         history: [
@@ -138,7 +138,7 @@ export default function ScanningScreen({
         balanceKnown: true,
         cardNumber: '7001 5521 8932 4409',
         rawUid: '0489ABCDEF1234',
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         themeColor: '#053C3F',
         accentColor: '#F97316',
         history: [],
@@ -156,7 +156,7 @@ export default function ScanningScreen({
         balanceKnown: true,
         cardNumber: '5379 1290 8472 6120',
         rawUid: '04C89123847219',
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         themeColor: '#003366',
         accentColor: '#FF6600',
         history: [
@@ -176,7 +176,7 @@ export default function ScanningScreen({
         balanceKnown: true,
         cardNumber: '1010 4920 3810 5920',
         rawUid: '04A99120349182',
-        nameOnCard: 'Sarah Smith',
+        nameOnCard: '',
         themeColor: '#7F1D1D',
         accentColor: '#F59E0B',
         history: [],
@@ -319,12 +319,12 @@ export default function ScanningScreen({
         </View>
 
         {/* Footer Attribution Pribadi */}
-        <View style={tw`items-center mt-2.5 mb-1`}>
+        <View style={tw`items-center mt-2 mb-1`}>
           <Text
             style={{
               fontFamily: 'Arial',
               fontStyle: 'italic',
-              fontSize: 10.5,
+              fontSize: 8,
               color: '#94A3B8',
               textAlign: 'center',
             }}

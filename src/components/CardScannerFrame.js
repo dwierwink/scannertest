@@ -13,7 +13,7 @@ import tw from 'twrnc';
 export default function CardScannerFrame({
   statusText = 'Scanning ...',
   progress = 0, // 0..1
-  cardholderName = 'Sarah Smith',
+  cardholderName = '',
   expiryDate = '01/22',
   cardNumber = '4747  4747  4747  4747',
   isScanning = true,
@@ -232,12 +232,14 @@ export default function CardScannerFrame({
             </View>
           </View>
 
-          {/* Footer Kartu: Nama, Tanggal, dan Nomor Kartu */}
+          {/* Footer Kartu: Tanggal dan Nomor Kartu */}
           <View>
             <View style={tw`flex-row justify-between items-center mb-1`}>
-              <Text numberOfLines={1} style={tw`text-white/80 text-[10px] font-semibold flex-1 mr-2`}>
-                {cardholderName.toUpperCase()}
-              </Text>
+              {cardholderName ? (
+                <Text numberOfLines={1} style={tw`text-white/80 text-[10px] font-semibold flex-1 mr-2`}>
+                  {cardholderName.toUpperCase()}
+                </Text>
+              ) : null}
               <Text style={tw`text-white/60 text-[10px] font-mono`}>
                 {expiryDate}
               </Text>
