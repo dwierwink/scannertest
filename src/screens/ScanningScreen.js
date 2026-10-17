@@ -318,6 +318,21 @@ export default function ScanningScreen({
           </TouchableOpacity>
         </View>
 
+        {/* Footer Attribution Pribadi */}
+        <View style={tw`items-center mt-2.5 mb-1`}>
+          <Text
+            style={{
+              fontFamily: 'Arial',
+              fontStyle: 'italic',
+              fontSize: 10.5,
+              color: '#94A3B8',
+              textAlign: 'center',
+            }}
+          >
+            Dibuat dan digunakan secara pribadi oleh Erwin Dwi K
+          </Text>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );

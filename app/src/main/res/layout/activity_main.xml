@@ -473,6 +473,19 @@
                     app:cornerRadius="16dp" />
             </LinearLayout>
 
+            <!-- Footer Attribution Pribadi -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:fontFamily="sans-serif"
+                android:textStyle="italic"
+                android:textSize="8pt"
+                android:textColor="#94A3B8"
+                android:text="Dibuat dan digunakan secara pribadi oleh Erwin Dwi K" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
