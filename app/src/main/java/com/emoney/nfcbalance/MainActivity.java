@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -46,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout layoutStateResult;
     private MaterialCardView cardFrontPortrait;
     private TextView tvFrontCardHolder;
+    private TextView tvCardBankTitle;
+    private TextView tvCardProductBadge;
+    private TextView tvCardNumberOnCard;
+    private View viewCardCircle1;
+    private View viewCardCircle2;
+
     private TextView tvResultIssuerLabel;
     private TextView tvResultBalanceAmount;
     private EditText etResultCardNumber;
@@ -80,6 +87,12 @@ public class MainActivity extends AppCompatActivity {
         layoutStateResult = findViewById(R.id.layoutStateResult);
         cardFrontPortrait = findViewById(R.id.cardFrontPortrait);
         tvFrontCardHolder = findViewById(R.id.tvFrontCardHolder);
+        tvCardBankTitle = findViewById(R.id.tvCardBankTitle);
+        tvCardProductBadge = findViewById(R.id.tvCardProductBadge);
+        tvCardNumberOnCard = findViewById(R.id.tvCardNumberOnCard);
+        viewCardCircle1 = findViewById(R.id.viewCardCircle1);
+        viewCardCircle2 = findViewById(R.id.viewCardCircle2);
+
         tvResultIssuerLabel = findViewById(R.id.tvResultIssuerLabel);
         tvResultBalanceAmount = findViewById(R.id.tvResultBalanceAmount);
         etResultCardNumber = findViewById(R.id.etResultCardNumber);
@@ -160,6 +173,13 @@ public class MainActivity extends AppCompatActivity {
             scanDialog.dismiss();
             displaySimulatedCard(2);
         });
+        View btnBrizzi = dialogView.findViewById(R.id.btnSimulateBrizzi);
+        if (btnBrizzi != null) {
+            btnBrizzi.setOnClickListener(v -> {
+                scanDialog.dismiss();
+                displaySimulatedCard(3);
+            });
+        }
 
         scanDialog.show();
     }
@@ -169,7 +189,8 @@ public class MainActivity extends AppCompatActivity {
                 new CardInfo("Mandiri e-Money", "6032 •••• •••• 8192", "04:A2:38:B1:92:44", 85000, "Rp 85.000", false, "ISO-DEP (ISO 14443-4)"),
                 new CardInfo("BCA Flazz", "5241 •••• •••• 1042", "04:88:E1:C2:55:12", 124500, "Rp 124.500", false, "ISO-DEP (DESFire EV2)"),
                 new CardInfo("BNI TapCash", "7001 •••• •••• 4409", "04:3F:19:9A:88:71", 50000, "Rp 50.000", false, "ISO-DEP (ISO 14443-4)"),
-                new CardInfo("BRI Brizzi", "5379 •••• •••• 6231", "04:B4:77:2D:10:99", 37000, "Rp 37.000", false, "MIFARE (ISO 14443-3A)")
+                new CardInfo("BRI Brizzi", "5379 •••• •••• 6231", "04:B4:77:2D:10:99", 37000, "Rp 37.000", false, "ISO-DEP (ISO 14443-4)"),
+                new CardInfo("Bank DKI JakCard", "1010 •••• •••• 5920", "04:C5:11:09:A1:33", 45000, "Rp 45.000", false, "ISO-DEP (ISO 14443-4)")
         };
         CardInfo selected = simCards[index % simCards.length];
         SoundVibrationHelper.triggerSuccess(this);
@@ -181,23 +202,69 @@ public class MainActivity extends AppCompatActivity {
         layoutStateResult.setVisibility(View.VISIBLE);
         fabScan.setVisibility(View.GONE);
 
-        tvFrontCardHolder.setText("Sarah Smith");
-        tvResultIssuerLabel.setText("SISA SALDO KARTU (" + card.getCardName() + "):");
+        tvFrontCardHolder.setText("SARAH SMITH");
+        tvResultIssuerLabel.setText("SALDO CHIP e-MONEY (" + card.getCardName() + "):");
         tvResultBalanceAmount.setText(card.getFormattedBalance());
         etResultCardNumber.setText(card.getCardNumber());
         etResultCardHolder.setText(card.getCardName());
+        tvCardNumberOnCard.setText(card.getCardNumber());
 
-        // Card theme
-        if (card.getCardName().contains("Mandiri")) {
-            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#0A1E3F"));
-        } else if (card.getCardName().contains("Flazz") || card.getCardName().contains("BCA")) {
+        String cardName = card.getCardName() != null ? card.getCardName() : "";
+        String lowerName = cardName.toLowerCase();
+
+        // Tampilkan gambar kartu otentik sesuai bank yang di-tap
+        if (lowerName.contains("mandiri")) {
+            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#041B37"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#80F59E0B"));
+            tvCardBankTitle.setText("MANDIRI");
+            tvCardProductBadge.setText("e-money");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F59E0B")));
+            tvCardProductBadge.setTextColor(Color.parseColor("#041B37"));
+            if (viewCardCircle1 != null) viewCardCircle1.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F59E0B")));
+            if (viewCardCircle2 != null) viewCardCircle2.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D97706")));
+        } else if (lowerName.contains("flazz") || lowerName.contains("bca")) {
             cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#003A70"));
-        } else if (card.getCardName().contains("TapCash") || card.getCardName().contains("BNI")) {
-            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#B43E00"));
-        } else if (card.getCardName().contains("Brizzi") || card.getCardName().contains("BRI")) {
-            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#004A8F"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#8000D2FF"));
+            tvCardBankTitle.setText("BCA");
+            tvCardProductBadge.setText("Flazz");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00D2FF")));
+            tvCardProductBadge.setTextColor(Color.parseColor("#00284D"));
+            if (viewCardCircle1 != null) viewCardCircle1.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00D2FF")));
+            if (viewCardCircle2 != null) viewCardCircle2.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E02475")));
+        } else if (lowerName.contains("tapcash") || lowerName.contains("bni")) {
+            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#053C3F"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#80F97316"));
+            tvCardBankTitle.setText("BNI");
+            tvCardProductBadge.setText("TapCash");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F97316")));
+            tvCardProductBadge.setTextColor(Color.WHITE);
+            if (viewCardCircle1 != null) viewCardCircle1.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F97316")));
+            if (viewCardCircle2 != null) viewCardCircle2.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#0D9488")));
+        } else if (lowerName.contains("brizzi") || lowerName.contains("bri")) {
+            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#003366"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#80FF6600"));
+            tvCardBankTitle.setText("BRI");
+            tvCardProductBadge.setText("BRIZZI");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF6600")));
+            tvCardProductBadge.setTextColor(Color.WHITE);
+            if (viewCardCircle1 != null) viewCardCircle1.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF6600")));
+            if (viewCardCircle2 != null) viewCardCircle2.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#0284C7")));
+        } else if (lowerName.contains("jakcard") || lowerName.contains("dki")) {
+            cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#7F1D1D"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#80F59E0B"));
+            tvCardBankTitle.setText("Bank DKI");
+            tvCardProductBadge.setText("JakCard");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F59E0B")));
+            tvCardProductBadge.setTextColor(Color.parseColor("#7F1D1D"));
+            if (viewCardCircle1 != null) viewCardCircle1.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F59E0B")));
+            if (viewCardCircle2 != null) viewCardCircle2.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#991B1B")));
         } else {
             cardFrontPortrait.setCardBackgroundColor(Color.parseColor("#0F172A"));
+            cardFrontPortrait.setStrokeColor(Color.parseColor("#406366F1"));
+            tvCardBankTitle.setText("SMART");
+            tvCardProductBadge.setText("CARD");
+            tvCardProductBadge.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#6366F1")));
+            tvCardProductBadge.setTextColor(Color.WHITE);
         }
     }
 
@@ -214,10 +281,11 @@ public class MainActivity extends AppCompatActivity {
                         "1. agusibrahim/prepaidcard_reader (Flutter & Java Native)\n" +
                         "2. adrisinaga/nfc_reader (Android IsoDep)\n\n" +
                         "Protokol Offline (ISO 14443-4):\n" +
-                        "• Mandiri e-Money: Select AID A000000003000000 -> Read Record 00B2010C00\n" +
-                        "• BCA Flazz: Select AID A000000003869807 -> Read Record 00B2010400\n" +
-                        "• BNI TapCash: Select AID A000000003101000 -> Read Binary 00B0000010\n" +
-                        "• BRI Brizzi: Select AID A000000003000001 -> Read Record 00B2010C00\n\n" +
+                        "• Mandiri e-Money: Select AID A000000018300001 -> Read Record 00B2010400 (Byte 12..15)\n" +
+                        "• BCA Flazz: Select AID A0000000180F0000018001 -> Select File 0200 -> Read Balance 8032000304\n" +
+                        "• BNI TapCash: Select AID 112233445566 -> Read Balance 9032030000\n" +
+                        "• BRI Brizzi: Select AID A000000018300001 -> Read Balance 906C000000\n" +
+                        "• Bank DKI JakCard: Select AID A000000018300001 -> Read Balance 904C000000\n\n" +
                         "Semua pembacaan berjalan 100% offline langsung dari chip NFC smartphone.")
                 .setPositiveButton("Tutup", null)
                 .show();

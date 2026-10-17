@@ -6,9 +6,10 @@
     android:id="@+id/rootCoordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="#F8F9FE">
 
-    <!-- MAIN SCROLLABLE CONTENT -->
+    <!-- MAIN SCROLLABLE CONTENT (Anti-Terpotong di Layar HP Android Mana Pun) -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,26 +19,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="36dp"
-            android:paddingBottom="90dp">
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="36dp">
 
             <!-- Top Navigation Row -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:id="@+id/btnNavBack"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_alignParentStart="true"
                     android:layout_centerVertical="true"
+                    android:gravity="center"
                     android:text="‹"
                     android:textColor="#1E1B4B"
-                    android:textSize="32sp"
-                    android:textStyle="normal" />
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/btnSkipOrAction"
@@ -45,9 +47,13 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:background="@drawable/bg_badge_rounded"
+                    android:backgroundTint="#EEF2FF"
                     android:text="Info APDU"
                     android:textColor="#6366F1"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
             </RelativeLayout>
 
@@ -68,7 +74,7 @@
                     android:textColor="#0F172A"
                     android:textSize="22sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="28dp" />
+                    android:layout_marginBottom="16dp" />
 
                 <!-- Center Circular Pastel Illustration -->
                 <LinearLayout
@@ -76,33 +82,33 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:layout_marginVertical="24dp">
+                    android:layout_marginVertical="12dp">
 
                     <FrameLayout
-                        android:layout_width="220dp"
-                        android:layout_height="220dp"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
                         android:background="@drawable/bg_empty_circle">
 
                         <!-- Ghost Card Graphic -->
                         <View
-                            android:layout_width="120dp"
-                            android:layout_height="76dp"
+                            android:layout_width="110dp"
+                            android:layout_height="70dp"
                             android:layout_gravity="center"
-                            android:layout_marginBottom="25dp"
+                            android:layout_marginBottom="22dp"
                             android:background="@drawable/bg_ghost_card" />
 
                         <!-- Staked Coin Text -->
                         <TextView
-                            android:layout_width="54dp"
-                            android:layout_height="54dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:layout_gravity="bottom|start"
-                            android:layout_marginStart="44dp"
-                            android:layout_marginBottom="36dp"
+                            android:layout_marginStart="40dp"
+                            android:layout_marginBottom="32dp"
                             android:background="@drawable/bg_coin_circle"
                             android:gravity="center"
                             android:text="$"
                             android:textColor="#8A97E8"
-                            android:textSize="24sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <!-- Question mark -->
@@ -110,18 +116,18 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="bottom|end"
-                            android:layout_marginEnd="55dp"
-                            android:layout_marginBottom="60dp"
+                            android:layout_marginEnd="50dp"
+                            android:layout_marginBottom="54dp"
                             android:text="?"
                             android:textColor="#8A97E8"
-                            android:textSize="32sp"
+                            android:textSize="28sp"
                             android:textStyle="bold" />
                     </FrameLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
+                        android:layout_marginTop="16dp"
                         android:text="Payment methods empty"
                         android:textColor="#1E293B"
                         android:textSize="16sp"
@@ -130,27 +136,27 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="6dp"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
                         android:text="Belum ada kartu e-money terhubung. Tekan tombol scan di bawah untuk membaca kartu Mandiri, Flazz, TapCash, atau Brizzi secara offline."
                         android:textColor="#64748B"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <!-- Prominent Scan Action Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnMainScanNfc"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="32dp"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="20dp"
                     android:backgroundTint="#6366F1"
                     android:text="Pindai Kartu e-Money (NFC)"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
-                    android:textSize="15sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    app:cornerRadius="18dp" />
+                    app:cornerRadius="16dp" />
             </LinearLayout>
 
             <!-- ========================================================
@@ -164,16 +170,16 @@
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <!-- 3D Fanned Cards Container -->
+                <!-- 3D Fanned Cards Container (Responsif) -->
                 <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:layout_marginVertical="8dp">
+                    android:layout_height="240dp"
+                    android:layout_marginVertical="6dp">
 
                     <!-- Back Card Left (Tilted) -->
                     <View
-                        android:layout_width="155dp"
-                        android:layout_height="220dp"
+                        android:layout_width="150dp"
+                        android:layout_height="215dp"
                         android:layout_gravity="center"
                         android:layout_marginEnd="65dp"
                         android:rotation="-14"
@@ -181,83 +187,149 @@
 
                     <!-- Back Card Right (Tilted) -->
                     <View
-                        android:layout_width="155dp"
-                        android:layout_height="220dp"
+                        android:layout_width="150dp"
+                        android:layout_height="215dp"
                         android:layout_gravity="center"
                         android:layout_marginStart="65dp"
                         android:rotation="14"
                         android:background="@drawable/bg_fanned_back_card" />
 
-                    <!-- Front Portrait Card (Deep Navy / Bank Gradient) -->
+                    <!-- Front Portrait Card Sesuai Kartu Bank yang Di-tap -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardFrontPortrait"
                         android:layout_width="165dp"
-                        android:layout_height="230dp"
+                        android:layout_height="225dp"
                         android:layout_gravity="center"
-                        app:cardBackgroundColor="#0F172A"
+                        app:cardBackgroundColor="#041B37"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="12dp">
+                        app:cardElevation="10dp"
+                        app:strokeWidth="1.5dp"
+                        app:strokeColor="#40F59E0B">
 
                         <RelativeLayout
+                            android:id="@+id/layoutCardFrontInner"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:padding="16dp">
+                            android:padding="14dp">
 
-                            <!-- Rotated Name on Card -->
+                            <!-- Sisi Kiri: Rotated Cardholder Name -->
                             <TextView
                                 android:id="@+id/tvFrontCardHolder"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentStart="true"
                                 android:layout_centerVertical="true"
-                                android:rotation="90"
-                                android:text="Sarah Smith"
-                                android:textColor="#94A3B8"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
+                                android:rotation="-90"
+                                android:text="SARAH SMITH"
+                                android:textColor="#E2E8F0"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.08" />
 
-                            <!-- EMV Chip & Contactless Waves Top Right -->
+                            <!-- Sisi Atas Kanan: Realistic Gold EMV Chip & Contactless Waves -->
                             <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_alignParentEnd="true"
-                                android:gravity="end"
+                                android:gravity="center_horizontal"
                                 android:orientation="vertical">
 
                                 <View
-                                    android:layout_width="32dp"
-                                    android:layout_height="24dp"
-                                    android:background="@drawable/bg_chip_mini" />
+                                    android:id="@+id/viewGoldChip"
+                                    android:layout_width="28dp"
+                                    android:layout_height="20dp"
+                                    android:background="@drawable/bg_chip_emv_gold" />
 
                                 <TextView
+                                    android:id="@+id/tvCardContactless"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="4dp"
+                                    android:layout_marginTop="2dp"
                                     android:rotation="90"
-                                    android:text="))))"
-                                    android:textColor="#94A3B8"
+                                    android:text=")))"
+                                    android:textColor="#F8FAFC"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
 
-                            <!-- Dual Circle Logo Bottom Right -->
+                            <!-- Sisi Bawah: Header Logo Bank & Nama Produk Kartu Sesuai Bank yang Di-tap -->
                             <LinearLayout
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
                                 android:layout_alignParentBottom="true"
-                                android:orientation="horizontal">
+                                android:orientation="vertical">
 
-                                <View
-                                    android:layout_width="22dp"
-                                    android:layout_height="22dp"
-                                    android:background="@drawable/circle_red" />
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
 
-                                <View
-                                    android:layout_width="22dp"
-                                    android:layout_height="22dp"
-                                    android:layout_marginStart="-6dp"
-                                    android:background="@drawable/circle_orange" />
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_alignParentStart="true"
+                                        android:orientation="vertical">
+
+                                        <!-- Bank Brand Title (mandiri, BCA, BNI, BRI, Bank DKI) -->
+                                        <TextView
+                                            android:id="@+id/tvCardBankTitle"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="MANDIRI"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="12sp"
+                                            android:textStyle="bold"
+                                            android:letterSpacing="0.06" />
+
+                                        <!-- Bank Product Badge (e-money, Flazz, TapCash, BRIZZI, JakCard) -->
+                                        <TextView
+                                            android:id="@+id/tvCardProductBadge"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="2dp"
+                                            android:background="@drawable/bg_badge_rounded"
+                                            android:paddingHorizontal="6dp"
+                                            android:paddingVertical="1dp"
+                                            android:text="e-money"
+                                            android:textColor="#041B37"
+                                            android:textSize="9sp"
+                                            android:textStyle="bold" />
+                                    </LinearLayout>
+
+                                    <!-- Dual Circle / Hologram Accent -->
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_alignParentEnd="true"
+                                        android:layout_centerVertical="true"
+                                        android:orientation="horizontal">
+
+                                        <View
+                                            android:id="@+id/viewCardCircle1"
+                                            android:layout_width="18dp"
+                                            android:layout_height="18dp"
+                                            android:background="@drawable/circle_red" />
+
+                                        <View
+                                            android:id="@+id/viewCardCircle2"
+                                            android:layout_width="18dp"
+                                            android:layout_height="18dp"
+                                            android:layout_marginStart="-6dp"
+                                            android:background="@drawable/circle_orange" />
+                                    </LinearLayout>
+                                </RelativeLayout>
+
+                                <!-- Masked Card Number on Card Face -->
+                                <TextView
+                                    android:id="@+id/tvCardNumberOnCard"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:fontFamily="monospace"
+                                    android:text="6032 •••• •••• 8192"
+                                    android:textColor="#CCFFFFFF"
+                                    android:textSize="9sp"
+                                    android:textStyle="bold"
+                                    android:letterSpacing="0.06" />
                             </LinearLayout>
                         </RelativeLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -265,10 +337,10 @@
 
                 <!-- Sensor NFC Icon Below Cards -->
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="center"
-                    android:layout_marginVertical="10dp"
+                    android:layout_marginVertical="6dp"
                     android:src="@drawable/ic_nfc_scan"
                     app:tint="#CBD5E1" />
 
@@ -276,7 +348,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="12dp"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
@@ -288,13 +360,13 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="14dp">
 
                         <TextView
                             android:id="@+id/tvResultIssuerLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="SISA SALDO KARTU (Mandiri e-Money):"
+                            android:text="SALDO CHIP e-MONEY (100% OFFLINE)"
                             android:textColor="#6366F1"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -306,12 +378,12 @@
                             android:layout_marginTop="2dp"
                             android:text="Rp 85.000"
                             android:textColor="#0F172A"
-                            android:textSize="28sp"
+                            android:textSize="26sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Form Fields (Matching Screen 2 Reference) -->
+                <!-- Form Fields (Card Number & Name on Card) -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -319,17 +391,17 @@
                     android:textColor="#64748B"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="4dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
-                    app:boxCornerRadiusBottomEnd="14dp"
-                    app:boxCornerRadiusBottomStart="14dp"
-                    app:boxCornerRadiusTopEnd="14dp"
-                    app:boxCornerRadiusTopStart="14dp"
+                    android:layout_marginBottom="10dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
                     app:boxStrokeColor="#E2E8F0">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -341,7 +413,7 @@
                         android:fontFamily="monospace"
                         android:text="6032 0182 9381 8192"
                         android:textColor="#0F172A"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -352,17 +424,17 @@
                     android:textColor="#64748B"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="4dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:boxCornerRadiusBottomEnd="14dp"
-                    app:boxCornerRadiusBottomStart="14dp"
-                    app:boxCornerRadiusTopEnd="14dp"
-                    app:boxCornerRadiusTopStart="14dp"
+                    android:layout_marginBottom="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
                     app:boxStrokeColor="#E2E8F0">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -373,7 +445,7 @@
                         android:focusable="false"
                         android:text="Sarah Smith"
                         android:textColor="#0F172A"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textStyle="bold" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -382,23 +454,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="Supported Networks: Mandiri • Flazz • TapCash • Brizzi"
+                    android:text="Supported Networks: Mandiri • Flazz • TapCash • Brizzi • JakCard"
                     android:textColor="#94A3B8"
                     android:textSize="11sp"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginBottom="14dp" />
 
                 <!-- Action Button Continue / Rescan -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnContinueOrRescan"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="52dp"
                     android:backgroundTint="#6366F1"
                     android:text="Continue"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    app:cornerRadius="18dp" />
+                    app:cornerRadius="16dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -410,10 +482,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
+        android:layout_margin="20dp"
         android:backgroundTint="#6366F1"
         android:contentDescription="Scan NFC"
-        app:elevation="8dp"
+        app:elevation="6dp"
         app:srcCompat="@drawable/ic_card_scan_fab"
         app:tint="#FFFFFF" />
 

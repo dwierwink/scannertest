@@ -3,20 +3,20 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
+  ScrollView,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import CardScannerFrame from '../components/CardScannerFrame';
 import { scanRealNfcCard, stopNfcScan, checkNfcAvailability } from '../services/nfcCardReader';
 
 /**
- * Screen 3: Scanning Screen
- * Sesuai persis dengan gambar referensi sebelah kanan.
+ * Screen 3: Scanning Screen Responsif Anti-Terpotong
  * Mengaktifkan sensor NFC smartphone secara langsung,
  * memindai chip IsoDep smartcard e-money/e-toll,
- * mengeksekusi APDU offline, dan menampilkan progress.
+ * mengeksekusi APDU offline, dan menampilkan visual kartu sesuai bank yang di-tap.
  */
 export default function ScanningScreen({
   onBack,
@@ -27,6 +27,11 @@ export default function ScanningScreen({
   const [progress, setProgress] = useState(0.15);
   const [isScanning, setIsScanning] = useState(true);
   const [nfcError, setNfcError] = useState(null);
+  const [activeBankPreview, setActiveBankPreview] = useState('');
+
+  const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+  const isCompact = screenHeight < 720;
 
   useEffect(() => {
     let isMounted = true;
@@ -58,8 +63,9 @@ export default function ScanningScreen({
 
         if (isMounted) {
           if (result.success) {
+            setActiveBankPreview(result.bankName || '');
             setProgress(1.0);
-            setStatusText('Kartu berhasil dibaca!');
+            setStatusText(`Kartu ${result.bankName || 'e-money'} berhasil dibaca!`);
             setTimeout(() => {
               onScanSuccess(result);
             }, 600);
@@ -78,7 +84,7 @@ export default function ScanningScreen({
     };
   }, []);
 
-  // Fungsi fallback simulasi pengujian cepat jika diuji di emulator / desktop
+  // Simulator pengujian cepat untuk semua kartu bank e-money
   const triggerSimulationCard = (bankKey) => {
     const mockProfiles = {
       mandiri: {
@@ -91,7 +97,7 @@ export default function ScanningScreen({
         cardNumber: '6032 0182 9381 8192',
         rawUid: '04A1B2C3D4E5F6',
         nameOnCard: 'Sarah Smith',
-        themeColor: '#0A1E3F',
+        themeColor: '#041B37',
         accentColor: '#F59E0B',
         history: [
           { type: 'Payment (e-Toll)', amount: 17000, date: '16/10/2026 11:20' },
@@ -106,21 +112,20 @@ export default function ScanningScreen({
       flazz: {
         success: true,
         isRealCard: false,
-        bankName: 'BCA Flazz (Gen 2)',
-        cardType: 'BCA Flazz Contactless',
+        bankName: 'BCA Flazz',
+        cardType: 'BCA Flazz Contactless (Gen 2)',
         balance: 124500,
         balanceKnown: true,
         cardNumber: '5241 8802 4491 1042',
         rawUid: '04F2E1D0C9B8A7',
         nameOnCard: 'Sarah Smith',
         themeColor: '#003A70',
-        accentColor: '#00A859',
+        accentColor: '#00D2FF',
         history: [
           { type: 'Payment (e-Toll)', amount: 12500, date: '16/10/2026 09:15' }
         ],
         apduLogs: [
-          { desc: 'Select Flazz Gen 2 AID', tx: '00A404000BA0000000180F000001800100', rx: '9000', success: true },
-          { desc: 'Select File 0200', tx: '00A40100020200', rx: '9000', success: true },
+          { desc: 'Select Flazz AID', tx: '00A404000BA0000000180F000001800100', rx: '9000', success: true },
           { desc: 'Get Balance (80 32)', tx: '803200030400000000', rx: '0001E6549000', success: true }
         ]
       },
@@ -134,30 +139,78 @@ export default function ScanningScreen({
         cardNumber: '7001 5521 8932 4409',
         rawUid: '0489ABCDEF1234',
         nameOnCard: 'Sarah Smith',
-        themeColor: '#B43E00',
+        themeColor: '#053C3F',
         accentColor: '#F97316',
         history: [],
         apduLogs: [
           { desc: 'Select TapCash AID', tx: '00A404000611223344556600', rx: '9000', success: true },
           { desc: 'Read Balance (90 32)', tx: '9032030000', rx: '000000C3509000', success: true }
         ]
+      },
+      brizzi: {
+        success: true,
+        isRealCard: false,
+        bankName: 'BRI Brizzi',
+        cardType: 'BRI BRIZZI (ISO-DEP)',
+        balance: 62000,
+        balanceKnown: true,
+        cardNumber: '5379 1290 8472 6120',
+        rawUid: '04C89123847219',
+        nameOnCard: 'Sarah Smith',
+        themeColor: '#003366',
+        accentColor: '#FF6600',
+        history: [
+          { type: 'Payment (e-Toll)', amount: 15000, date: '16/10/2026 14:10' }
+        ],
+        apduLogs: [
+          { desc: 'Select BRIZZI AID', tx: '00A4040008A00000001830000100', rx: '9000', success: true },
+          { desc: 'Read Balance (90 6C)', tx: '906C000000', rx: '0000F2309000', success: true }
+        ]
+      },
+      jakcard: {
+        success: true,
+        isRealCard: false,
+        bankName: 'Bank DKI JakCard',
+        cardType: 'Bank DKI JakCard (ISO-DEP)',
+        balance: 45000,
+        balanceKnown: true,
+        cardNumber: '1010 4920 3810 5920',
+        rawUid: '04A99120349182',
+        nameOnCard: 'Sarah Smith',
+        themeColor: '#7F1D1D',
+        accentColor: '#F59E0B',
+        history: [],
+        apduLogs: [
+          { desc: 'Select JakCard AID', tx: '00A4040007A000000018300001', rx: '9000', success: true }
+        ]
       }
     };
 
     const chosen = mockProfiles[bankKey] || mockProfiles.mandiri;
+    setActiveBankPreview(chosen.bankName);
     setProgress(1.0);
-    setStatusText(`Simulasi membaca chip ${chosen.bankName}...`);
+    setStatusText(`Membaca chip ${chosen.bankName}...`);
     setTimeout(() => {
       onScanSuccess(chosen);
-    }, 400);
+    }, 450);
   };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-[#F8F9FE]`}>
-      <View style={tw`flex-1 px-6 pt-4 justify-between`}>
-        
+      <ScrollView
+        style={tw`flex-1`}
+        contentContainerStyle={[
+          tw`px-6 justify-between flex-grow`,
+          {
+            paddingTop: Math.max(insets.top, 8),
+            paddingBottom: Math.max(insets.bottom, 16),
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         {/* Top Navigation Bar: Back & Enter Manually */}
-        <View style={tw`flex-row justify-between items-center mb-4`}>
+        <View style={tw`flex-row justify-between items-center mb-3`}>
           <TouchableOpacity
             onPress={onBack}
             style={tw`w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-slate-100`}
@@ -169,34 +222,36 @@ export default function ScanningScreen({
           <TouchableOpacity
             onPress={onEnterManually}
             activeOpacity={0.7}
+            style={tw`py-1.5 px-3 rounded-full bg-indigo-50 border border-indigo-100`}
           >
-            <Text style={tw`text-indigo-600 font-semibold text-sm`}>
+            <Text style={tw`text-indigo-600 font-bold text-xs`}>
               Enter Manually
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Title: Position your card inside the frame */}
-        <View style={tw`items-center my-2`}>
-          <Text style={tw`text-slate-900 text-xl font-bold tracking-tight text-center`}>
+        <View style={tw`items-center my-1`}>
+          <Text style={[tw`text-slate-900 font-extrabold tracking-tight text-center`, { fontSize: isCompact ? 18 : 21 }]}>
             Position your card inside the frame
           </Text>
-          <Text style={tw`text-slate-400 text-xs text-center mt-1`}>
+          <Text style={tw`text-slate-500 text-xs text-center mt-1 px-4`}>
             Tempelkan kartu e-money / e-toll tepat di belakang smartphone Anda
           </Text>
         </View>
 
-        {/* Komponen Card Scanner Frame dengan Laser Animasi */}
-        <View style={tw`flex-1 justify-center`}>
+        {/* Komponen Card Scanner Frame dengan Laser Animasi dan Gambar Kartu Otentik */}
+        <View style={tw`justify-center items-center my-2`}>
           <CardScannerFrame
             statusText={statusText}
             progress={progress}
             isScanning={isScanning}
+            bankName={activeBankPreview}
           />
 
           {/* Alert Peringatan jika NFC Belum Aktif / Error */}
           {nfcError && (
-            <View style={tw`bg-amber-50 border border-amber-200 p-3 rounded-xl mx-4 mt-2`}>
+            <View style={tw`bg-amber-50 border border-amber-200 p-2.5 rounded-xl mx-2 mt-2 w-full max-w-sm`}>
               <Text style={tw`text-amber-800 font-bold text-xs`}>
                 ⚠️ Info Sensor NFC:
               </Text>
@@ -206,36 +261,33 @@ export default function ScanningScreen({
             </View>
           )}
 
-          {/* Opsi Uji Coba Cepat (Simulator & Debug Testing) */}
-          <View style={tw`mt-4 items-center`}>
-            <Text style={tw`text-slate-400 text-[10px] font-semibold uppercase tracking-wider mb-2`}>
-              Uji Coba Profil Kartu (Simulator Test)
+          {/* Opsi Uji Coba Cepat Semua Kartu Bank (Simulator Test) */}
+          <View style={[tw`items-center w-full max-w-sm`, { marginTop: isCompact ? 8 : 12 }]}>
+            <Text style={tw`text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2`}>
+              Simulasi Cepat Kartu Bank:
             </Text>
-            <View style={tw`flex-row gap-2`}>
-              <TouchableOpacity
-                onPress={() => triggerSimulationCard('mandiri')}
-                style={tw`bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm`}
-              >
-                <Text style={tw`text-[11px] font-bold text-slate-700`}>Mandiri</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => triggerSimulationCard('flazz')}
-                style={tw`bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm`}
-              >
-                <Text style={tw`text-[11px] font-bold text-slate-700`}>BCA Flazz</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => triggerSimulationCard('tapcash')}
-                style={tw`bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm`}
-              >
-                <Text style={tw`text-[11px] font-bold text-slate-700`}>TapCash</Text>
-              </TouchableOpacity>
+            <View style={tw`flex-row flex-wrap justify-center gap-1.5`}>
+              {[
+                { id: 'mandiri', label: 'Mandiri' },
+                { id: 'flazz', label: 'Flazz' },
+                { id: 'tapcash', label: 'TapCash' },
+                { id: 'brizzi', label: 'Brizzi' },
+                { id: 'jakcard', label: 'JakCard' },
+              ].map((b) => (
+                <TouchableOpacity
+                  key={b.id}
+                  onPress={() => triggerSimulationCard(b.id)}
+                  style={tw`bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50`}
+                >
+                  <Text style={tw`text-[11px] font-bold text-slate-700`}>{b.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </View>
 
         {/* Bottom Bar: Continue Button */}
-        <View style={tw`pb-6 pt-2`}>
+        <View style={{ paddingTop: isCompact ? 6 : 10, paddingBottom: 4 }}>
           <TouchableOpacity
             onPress={() => {
               if (progress >= 0.8) {
@@ -245,19 +297,19 @@ export default function ScanningScreen({
               }
             }}
             style={[
-              tw`w-full py-4 rounded-2xl flex-row items-center justify-center shadow-md`,
+              tw`w-full py-3.5 rounded-2xl flex-row items-center justify-center shadow-md`,
               {
                 backgroundColor: '#5C60F5',
                 shadowColor: '#5C60F5',
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.35,
-                shadowRadius: 10,
-                elevation: 6,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
               },
             ]}
             activeOpacity={0.8}
           >
-            <Text style={tw`text-white font-bold text-base mr-3`}>
+            <Text style={tw`text-white font-bold text-base mr-2`}>
               Continue
             </Text>
             <View style={tw`w-6 h-6 rounded-full bg-white/20 items-center justify-center`}>
@@ -266,7 +318,7 @@ export default function ScanningScreen({
           </TouchableOpacity>
         </View>
 
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
