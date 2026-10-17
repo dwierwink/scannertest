@@ -18,6 +18,10 @@ public class SoundVibrationHelper {
     /**
      * Memainkan efek getar dan suara notifikasi kartu terbaca
      */
+    public static void triggerSuccess(Context context) {
+        playCardTapFeedback(context);
+    }
+
     public static void playCardTapFeedback(Context context) {
         if (context == null) return;
 
