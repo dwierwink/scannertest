@@ -63,10 +63,27 @@ public class NfcCardReader {
                         Log.d(TAG, "Historical Bytes: " + ByteUtils.toHexString(historicalBytes));
                     }
 
-                    // A. Coba deteksi via DESFire
+                    // A. Prioritaskan ISO-DEP Bank Reader (Mandiri, Flazz, TapCash, Brizzi, JakCard)
+                    IsoDepReader.IsoResult isoResult = IsoDepReader.readIsoDep(isoDep);
+                    if (isoResult != null && isoResult.detectedIssuer != null) {
+                        cardInfo.setCardName(isoResult.detectedIssuer);
+                        if (isoResult.parsedCardNumber != null) {
+                            cardInfo.setCardNumber(isoResult.parsedCardNumber);
+                        }
+                        if (isoResult.balanceFound) {
+                            cardInfo.setBalance(isoResult.balance);
+                            cardInfo.setFormattedBalance(ByteUtils.formatRupiah(isoResult.balance));
+                            cardInfo.setEncrypted(false);
+                            return cardInfo;
+                        }
+                    }
+
+                    // B. Fallback ke pembaca generic DESFire Value File
                     DesfireReader.DesfireResult desfireResult = DesfireReader.readDesfire(isoDep);
                     if (desfireResult.isDesfire) {
-                        cardInfo.setCardName("Mandiri e-Money");
+                        if (cardInfo.getCardName().equals("Kartu NFC") || cardInfo.getCardName().equals("Kartu e-Money")) {
+                            cardInfo.setCardName("Mandiri e-Money / DESFire");
+                        }
                         if (desfireResult.balanceFound) {
                             cardInfo.setBalance(desfireResult.balance);
                             cardInfo.setFormattedBalance(ByteUtils.formatRupiah(desfireResult.balance));
@@ -75,21 +92,11 @@ public class NfcCardReader {
                         }
                     }
 
-                    // B. Coba deteksi via ISO-DEP Bank AID Reader
-                    IsoDepReader.IsoResult isoResult = IsoDepReader.readIsoDep(isoDep);
-                    if (isoResult != null && isoResult.detectedIssuer != null) {
-                        cardInfo.setCardName(isoResult.detectedIssuer);
-                        if (isoResult.balanceFound) {
-                            cardInfo.setBalance(isoResult.balance);
-                            cardInfo.setFormattedBalance(ByteUtils.formatRupiah(isoResult.balance));
-                            cardInfo.setEncrypted(false);
-                            return cardInfo;
-                        } else if (isoResult.isSecurityProtected) {
-                            // Saldo terkunci dengan proteksi enkripsi bank (HSM/SAM)
-                            cardInfo.setEncrypted(true);
-                            cardInfo.setFormattedBalance("Terkunci Enkripsi");
-                            return cardInfo;
-                        }
+                    // Jika bank terdeteksi tapi saldo memerlukan autentikasi SAM bank
+                    if (isoResult != null && isoResult.isSecurityProtected) {
+                        cardInfo.setEncrypted(true);
+                        cardInfo.setFormattedBalance("Terkunci Enkripsi");
+                        return cardInfo;
                     }
 
                 } catch (IOException e) {
