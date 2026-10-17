@@ -83,12 +83,15 @@ jobs:
 
       - name: 🐘 Setup Gradle Cache & Environment
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
 
       - name: 🔑 Set root gradlew permissions
         run: chmod +x ./gradlew
 
       - name: 🔨 Build Native Android APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          ./gradlew assembleDebug --no-daemon --stacktrace || gradle assembleDebug --no-daemon --stacktrace
 
       - name: 📋 Rename and Stage APK
         run: |
