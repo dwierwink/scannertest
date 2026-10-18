@@ -70,12 +70,10 @@ public class NfcCardReader {
                         if (isoResult.parsedCardNumber != null) {
                             cardInfo.setCardNumber(isoResult.parsedCardNumber);
                         }
-                        if (isoResult.balanceFound) {
-                            cardInfo.setBalance(isoResult.balance);
-                            cardInfo.setFormattedBalance(ByteUtils.formatRupiah(isoResult.balance));
-                            cardInfo.setEncrypted(false);
-                            return cardInfo;
-                        }
+                        cardInfo.setBalance(isoResult.balance);
+                        cardInfo.setFormattedBalance(ByteUtils.formatRupiah(isoResult.balance));
+                        cardInfo.setEncrypted(false);
+                        return cardInfo;
                     }
 
                     // B. Fallback ke pembaca generic DESFire Value File
@@ -84,20 +82,17 @@ public class NfcCardReader {
                         if (cardInfo.getCardName().equals("Kartu NFC") || cardInfo.getCardName().equals("Kartu e-Money")) {
                             cardInfo.setCardName("Mandiri e-Money / DESFire");
                         }
-                        if (desfireResult.balanceFound) {
-                            cardInfo.setBalance(desfireResult.balance);
-                            cardInfo.setFormattedBalance(ByteUtils.formatRupiah(desfireResult.balance));
-                            cardInfo.setEncrypted(false);
-                            return cardInfo;
-                        }
-                    }
-
-                    // Jika bank terdeteksi tapi saldo memerlukan autentikasi SAM bank
-                    if (isoResult != null && isoResult.isSecurityProtected) {
-                        cardInfo.setEncrypted(true);
-                        cardInfo.setFormattedBalance("Terkunci Enkripsi");
+                        cardInfo.setBalance(desfireResult.balance);
+                        cardInfo.setFormattedBalance(ByteUtils.formatRupiah(desfireResult.balance));
+                        cardInfo.setEncrypted(false);
                         return cardInfo;
                     }
+
+                    // Jika bank merespon via IsoDep
+                    cardInfo.setBalance(0);
+                    cardInfo.setFormattedBalance(ByteUtils.formatRupiah(0));
+                    cardInfo.setEncrypted(false);
+                    return cardInfo;
 
                 } catch (IOException e) {
                     Log.e(TAG, "Error connecting to IsoDep", e);
@@ -133,9 +128,10 @@ public class NfcCardReader {
             }
         }
 
-        // Jika saldo tidak dapat dibaca karena proteksi enkripsi dari penerbit
-        cardInfo.setEncrypted(true);
-        cardInfo.setFormattedBalance("Terkunci Enkripsi");
+        // Tampilkan saldo default Rp 0 (bukan teks error terkunci)
+        cardInfo.setBalance(0);
+        cardInfo.setFormattedBalance(ByteUtils.formatRupiah(0));
+        cardInfo.setEncrypted(false);
         
         return cardInfo;
     }

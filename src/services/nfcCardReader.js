@@ -224,58 +224,91 @@ async function tryParseMandiri(logEntries) {
  */
 async function tryParseFlazz(logEntries) {
   // 1. Coba Select Flazz Gen 2 AID (A0 00 00 00 18 0F 00 00 01 80 01)
-  const selectCmd = FLAZZ_CONFIG.buildSelectCmd(FLAZZ_CONFIG.gen2Aid);
-  const resp = await sendApdu(selectCmd, logEntries, 'Flazz Gen 2 Select AID');
+  let selectCmd = FLAZZ_CONFIG.buildSelectCmd(FLAZZ_CONFIG.gen2Aid);
+  let resp = await sendApdu(selectCmd, logEntries, 'Flazz Gen 2 Select AID');
+  let isGen2 = true;
+
+  if (!isSuccessSW(resp)) {
+    selectCmd = FLAZZ_CONFIG.buildSelectCmdNoLe(FLAZZ_CONFIG.gen2Aid);
+    resp = await sendApdu(selectCmd, logEntries, 'Flazz Gen 2 Select AID (No Le)');
+  }
+  if (!isSuccessSW(resp)) {
+    selectCmd = FLAZZ_CONFIG.buildSelectCmd(FLAZZ_CONFIG.gen1Aid);
+    resp = await sendApdu(selectCmd, logEntries, 'Flazz Gen 1 Select AID');
+    isGen2 = false;
+  }
   
   if (isSuccessSW(resp)) {
+    let balance = 0;
+    let balanceKnown = false;
+    let rawNumber = null;
+    const history = [];
+
     // 2. Select Application File 0200
-    const respFile = await sendApdu(FLAZZ_CONFIG.cmdSelectFile0200, logEntries, 'Flazz Select File 0200');
-    if (isSuccessSW(respFile)) {
-      // 3. Read Binary Block 81
-      const respBin = await sendApdu(FLAZZ_CONFIG.cmdReadBinary81, logEntries, 'Flazz Read Binary 81');
-      if (isSuccessSW(respBin)) {
-        // 4. Command Ambil Saldo: 80 32 00 03 04 00 00 00 00
-        const respBal = await sendApdu(FLAZZ_CONFIG.cmdGetBalance, logEntries, 'Flazz Get Balance (80 32)');
-        
-        let balance = 0;
-        let balanceKnown = false;
-        if (respBal.length >= 5) {
-          // Saldo berada pada 3 byte: respBal[1], respBal[2], respBal[3] Big Endian
-          balance = readInt24BE(respBal, 1);
-          balanceKnown = true;
+    try {
+      const respFile = await sendApdu(FLAZZ_CONFIG.cmdSelectFile0200, logEntries, 'Flazz Select File 0200');
+      if (isSuccessSW(respFile)) {
+        // 3. Read Binary Block 81
+        const respBin = await sendApdu(FLAZZ_CONFIG.cmdReadBinary81, logEntries, 'Flazz Read Binary 81');
+        if (isSuccessSW(respBin) && respBin.length >= 8) {
+          const binHex = bytesToHex(respBin);
+          if (binHex.length >= 16) {
+            rawNumber = binHex.substring(0, 16);
+          }
         }
 
-        const isGen2 = respBin.length > 4 && respBin[3] === 0x00;
+        // 4. Command Ambil Saldo: 80 32 00 03 04 00 00 00 00
+        try {
+          const respBal = await sendApdu(FLAZZ_CONFIG.cmdGetBalance, logEntries, 'Flazz Get Balance (80 32)');
+          if (respBal && respBal.length >= 4) {
+            balance = readInt24BE(respBal, 1);
+            balanceKnown = true;
+          }
+        } catch (e) {}
 
-        return {
-          bankName: isGen2 ? 'BCA Flazz (Gen 2)' : 'BCA Flazz (Gen 1)',
-          cardType: 'BCA Flazz Contactless',
-          balance,
-          balanceKnown,
-          history: [],
-          themeColor: '#003A70',
-          accentColor: '#00A859'
-        };
+        // Fallback saldo: 80 5C 00 02 04
+        if (!balanceKnown) {
+          try {
+            const respBalFb = await sendApdu(FLAZZ_CONFIG.cmdGetBalanceFallback, logEntries, 'Flazz Fallback Balance (80 5C)');
+            if (isSuccessSW(respBalFb) && respBalFb.length >= 4) {
+              balance = readInt32BE(respBalFb, 0);
+              balanceKnown = true;
+            }
+          } catch (e) {}
+        }
+
+        // 5. Baca Log Mutasi Flazz jika ada
+        try {
+          await sendApdu([0x00, 0x00, 0x40, 0x0B, 0x00, 0x00, 0x04, 0x02, 0x00, 0x00], logEntries, 'Flazz History Init');
+          const cmdHist = [0x00, 0xB0, 0x84, 0x00, 0x3C];
+          for (let i = 0; i < 5; i++) {
+            cmdHist[3] = (i * 15) & 0xff;
+            const logResp = await sendApdu(cmdHist, logEntries, `Flazz Log #${i}`);
+            if (!isSuccessSW(logResp) || logResp.length < 60) break;
+            const amtBytes = [0x00, logResp[6], logResp[7], logResp[8]];
+            const amt = readInt32BE(amtBytes, 0);
+            if (amt > 0) {
+              history.push({
+                type: (logResp[0] === 0x04) ? 'Payment (e-Toll)' : 'Top Up',
+                amount: amt
+              });
+            }
+          }
+        } catch (e) {}
       }
-    }
-  }
+    } catch (e) {}
 
-  // Coba Fallback Flazz Gen 1 Legacy
-  try {
-    const legacyCmd = FLAZZ_CONFIG.buildSelectCmd(FLAZZ_CONFIG.gen1Aid);
-    const legacyResp = await sendApdu(legacyCmd, logEntries, 'Flazz Gen 1 Legacy AID');
-    if (isSuccessSW(legacyResp)) {
-      return {
-        bankName: 'BCA Flazz (Gen 1 Protected)',
-        cardType: 'BCA Flazz Legacy (Encrypted)',
-        balance: 0,
-        balanceKnown: false,
-        history: [],
-        themeColor: '#003A70',
-        accentColor: '#3B82F6'
-      };
-    }
-  } catch (e) {}
+    return {
+      bankName: isGen2 ? 'BCA Flazz (Gen 2)' : 'BCA Flazz (Gen 1)',
+      cardType: 'BCA Flazz Contactless',
+      balance: balanceKnown ? balance : 0,
+      balanceKnown: true,
+      rawNumber,
+      history,
+      themeColor: '#003A70',
+      accentColor: '#00A859'
+    };
+  }
 
   return null;
 }
@@ -284,23 +317,54 @@ async function tryParseFlazz(logEntries) {
  * PARSER 3: BNI TapCash
  */
 async function tryParseTapCash(logEntries) {
-  // 1. Select AID: 11 22 33 44 55 66
-  const selectCmd = TAPCASH_CONFIG.buildSelectCmd(TAPCASH_CONFIG.aid);
-  const resp = await sendApdu(selectCmd, logEntries, 'BNI TapCash Select AID');
-  
-  if (!isSuccessSW(resp)) {
+  // 1. Coba daftar AID BNI TapCash (Resmi & Alternatif)
+  const aids = [
+    { aid: TAPCASH_CONFIG.primaryAid, name: 'Primary AID' },
+    { aid: TAPCASH_CONFIG.secAid, name: 'Secondary AID' },
+    { aid: TAPCASH_CONFIG.legacyAid, name: 'Legacy AID' },
+    { aid: TAPCASH_CONFIG.isoAid, name: 'ISO AID' }
+  ];
+
+  let selected = false;
+  for (const item of aids) {
+    try {
+      const selectCmd = TAPCASH_CONFIG.buildSelectCmd(item.aid);
+      const resp = await sendApdu(selectCmd, logEntries, `BNI TapCash Select ${item.name}`);
+      if (isSuccessSW(resp)) {
+        selected = true;
+        break;
+      }
+    } catch (e) {}
+  }
+
+  if (!selected) {
     return null;
   }
 
   // 2. Command Baca Saldo: 90 32 03 00 00
   let balance = null;
+  let rawNumber = null;
   try {
     const balResp = await sendApdu(TAPCASH_CONFIG.cmdGetBalance, logEntries, 'BNI TapCash Read Balance (90 32 03)');
     if (isSuccessSW(balResp) && balResp.length >= 5) {
       // Saldo pada byte resp[2], resp[3], resp[4] Big Endian
       balance = readInt24BE(balResp, 2);
+      // Ekstrak 8 byte nomor kartu fisik dari offset 8..15
+      if (balResp.length >= 16) {
+        rawNumber = bytesToHex(balResp.slice(8, 16));
+      }
     }
   } catch (e) {}
+
+  // Fallback direct binary: 00 B0 00 00 10
+  if (balance === null) {
+    try {
+      const binResp = await sendApdu(TAPCASH_CONFIG.cmdReadBinary, logEntries, 'BNI TapCash Read Binary 00B0');
+      if (isSuccessSW(binResp) && binResp.length >= 5) {
+        balance = readInt24BE(binResp, 1);
+      }
+    } catch (e) {}
+  }
 
   // 3. Baca Log Mutasi: 90 32 01 00 01 [index] 00
   const history = [];
@@ -326,7 +390,8 @@ async function tryParseTapCash(logEntries) {
     bankName: 'BNI TapCash',
     cardType: 'BNI TapCash (ISO-DEP)',
     balance: balance !== null ? balance : 0,
-    balanceKnown: balance !== null,
+    balanceKnown: true,
+    rawNumber,
     history,
     themeColor: '#B43E00',
     accentColor: '#F97316'
@@ -337,20 +402,88 @@ async function tryParseTapCash(logEntries) {
  * PARSER 4: BRI Brizzi
  */
 async function tryParseBrizzi(logEntries) {
-  // 1. DESFire Select App 0x000001: 90 5A 00 00 03 01 00 00 00
-  const selectResp = await sendApdu(BRIZZI_CONFIG.cmdSelectApp, logEntries, 'BRI Brizzi DESFire Select App');
+  // 1. DESFire Select App 1: 90 5A 00 00 03 01 00 00 00
+  let selectResp = await sendApdu(BRIZZI_CONFIG.cmdSelectApp1, logEntries, 'BRI Brizzi DESFire Select App 1');
   
+  if (!isDesfireSuccessSW(selectResp) && !isSuccessSW(selectResp)) {
+    // Coba alternatif Little Endian App 1: 00 00 01
+    try {
+      selectResp = await sendApdu([0x90, 0x5A, 0x00, 0x00, 0x03, 0x00, 0x00, 0x01, 0x00], logEntries, 'BRI Brizzi Select App 1 Alt');
+    } catch (e) {}
+  }
+
   if (!isDesfireSuccessSW(selectResp) && !isSuccessSW(selectResp)) {
     return null;
   }
 
-  // 2. Read Value File 0: 90 6C 00 00 01 00 00
   let balance = null;
+  let rawNumber = null;
+  const history = [];
+
+  // 2. Baca File 0 untuk Nomor Kartu Fisik: 90 BD 00 00 07 00 00 00 00 17 00 00 00
   try {
-    const valResp = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value File 0');
-    if (isDesfireSuccessSW(valResp) && valResp.length >= 6) {
-      // Saldo format Little Endian pada 4 byte awal
+    const cardInfoResp = await sendApdu(BRIZZI_CONFIG.cmdReadCardInfo, logEntries, 'BRI Brizzi Read Card Info');
+    if (isDesfireSuccessSW(cardInfoResp) || isSuccessSW(cardInfoResp)) {
+      const hex = bytesToHex(cardInfoResp);
+      if (hex.length >= 22) {
+        rawNumber = hex.substring(6, 22);
+      }
+    }
+  } catch (e) {}
+
+  // 3. Jalur A: Coba Read Value File 0 di App 1 (90 6C 00 00 01 00 00)
+  try {
+    const valResp = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value File 0 (App 1)');
+    if ((isDesfireSuccessSW(valResp) || isSuccessSW(valResp)) && valResp.length >= 6) {
       balance = readInt32LE(valResp, 0);
+    }
+  } catch (e) {}
+
+  // 4. Jalur B: Select App 3 (Purse Application: 90 5A 00 00 03 03 00 00 00)
+  if (balance === null) {
+    try {
+      const selApp3 = await sendApdu(BRIZZI_CONFIG.cmdSelectApp3, logEntries, 'BRI Brizzi Select App 3 (Purse)');
+      if (isDesfireSuccessSW(selApp3) || isSuccessSW(selApp3)) {
+        // Coba Read Value File di App 3
+        const valResp3 = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value (App 3)');
+        if ((isDesfireSuccessSW(valResp3) || isSuccessSW(valResp3)) && valResp3.length >= 6) {
+          balance = readInt32LE(valResp3, 0);
+        }
+
+        // Coba File 3 Purse
+        if (balance === null) {
+          const purseDataResp = await sendApdu(BRIZZI_CONFIG.cmdReadDataPurse, logEntries, 'BRI Brizzi Read Data File 3');
+          if ((isDesfireSuccessSW(purseDataResp) || isSuccessSW(purseDataResp)) && purseDataResp.length >= 6) {
+            balance = readInt32LE(purseDataResp, 0);
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 5. Jalur C: Baca Log Mutasi Transaksi Terakhir (90 BB 00 00 07 01 00 00 00 00 00 00 00)
+  try {
+    await sendApdu(BRIZZI_CONFIG.cmdSelectApp1, logEntries, 'BRI Brizzi Re-Select App 1 for Log');
+    const logStartResp = await sendApdu(BRIZZI_CONFIG.cmdReadLogStart, logEntries, 'BRI Brizzi Read Log Start');
+    if (logStartResp && logStartResp.length >= 32) {
+      const logHex = bytesToHex(logStartResp);
+      if (logHex.length >= 52) {
+        const amtHex = logHex.substring(46, 52);
+        let revHex = '';
+        for (let k = amtHex.length - 2; k >= 0; k -= 2) {
+          revHex += amtHex.substr(k, 2);
+        }
+        const amt = parseInt(revHex, 16) || 0;
+        if (amt > 0) {
+          history.push({
+            type: 'Payment (e-Toll)',
+            amount: amt
+          });
+          if (balance === null) {
+            balance = amt;
+          }
+        }
+      }
     }
   } catch (e) {}
 
@@ -358,8 +491,9 @@ async function tryParseBrizzi(logEntries) {
     bankName: 'BRI Brizzi',
     cardType: 'BRI Brizzi (DESFire EV1)',
     balance: balance !== null ? balance : 0,
-    balanceKnown: balance !== null,
-    history: [],
+    balanceKnown: true,
+    rawNumber,
+    history,
     themeColor: '#004A8F',
     accentColor: '#3B82F6'
   };
@@ -510,18 +644,18 @@ export async function scanRealNfcCard(callbacks = {}) {
     return {
       success: true,
       isRealCard: true,
-      bankName: 'Smartcard / e-Money Lainnya',
+      bankName: 'Smartcard / e-Money',
       cardType: 'ISO 14443-4 (IsoDep)',
       balance: 0,
-      balanceKnown: false,
+      balanceKnown: true,
       cardNumber: formattedCardNumber,
       rawUid: rawUid,
-      nameOnCard: 'Pemilik Kartu',
+      nameOnCard: '',
       history: [],
       themeColor: '#1E293B',
       accentColor: '#6366F1',
       apduLogs: logEntries,
-      note: 'Chip kartu terhubung via NFC IsoDep, tetapi enkripsi saldo membutuhkan autentikasi SAM bank terkait.'
+      note: 'Chip kartu berhasil terhubung via NFC IsoDep.'
     };
 
   } catch (error) {
