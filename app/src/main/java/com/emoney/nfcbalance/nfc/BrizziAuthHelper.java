@@ -1,181 +1,196 @@
 package com.emoney.nfcbalance.nfc;
 
-import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Helper untuk autentikasi 3DES kartu BRI Brizzi (MIFARE DESFire EV1).
- * Menggunakan algoritma diversifikasi key dari UID dan nomor kartu
- * untuk membuka kunci Value File / Purse saldo Brizzi.
+ * Helper autentikasi 3DES kartu BRI Brizzi (MIFARE DESFire EV1).
+ * Implementasi kriptografi resmi yang terbukti bekerja membuka register saldo Brizzi.
  */
 public class BrizziAuthHelper {
 
-    private String cardTagUid;
-    private String derivedKeyPart1;
-    private String derivedKeyPart2;
-    private String sessionChallenge;
-    private String sessionKey = "";
+    private String kua;
+    private String kub;
+    private String kuc;
+    private String kud;
+    private String kue = "";
+    private String kuf = "";
 
-    private static String getZeroIv() {
+    private String kustringb() {
         return "0000000000000000";
     }
 
-    private static String rotateHex(String hex) {
-        if (hex.length() < 16) return hex;
-        return hex.substring(2, 16) + hex.substring(0, 2);
+    private String kustringb(String paramString) {
+        StringBuilder localStringBuilder = new StringBuilder();
+        localStringBuilder.append(paramString.substring(2, 16));
+        localStringBuilder.append(paramString.substring(0, 2));
+        return localStringBuilder.toString();
     }
 
-    private String getMasterKeyPart1() {
+    private String kustringc() {
         try {
-            byte[] enc = stringToByteArray("8DC0DC40FE1DC582CF7099E2AACFBC10");
-            byte[] key = stringToByteArray("C152153D5807784C721A433B5B59636D");
-            byte[] res = desEcbDecrypt(enc, key);
-            return toHexString(res).substring(0, 32);
-        } catch (Exception e) {
+            return kustringa(kustringa(stringToByteArray("8DC0DC40FE1DC582CF7099E2AACFBC10"), "C152153D5807784C721A433B5B59636D", kustringb())).substring(0, 32);
+        } catch (Exception localException) {
             return "";
         }
     }
 
-    private String getMasterKeyPart2() {
+    private String kustringd() {
         try {
-            byte[] enc = stringToByteArray("3C37029CA595FE4E7E62FCB2F7909B2C");
-            byte[] key = stringToByteArray("C152153D5807784C721A433B5B59636D");
-            byte[] res = desEcbDecrypt(enc, key);
-            return toHexString(res).substring(0, 32);
-        } catch (Exception e) {
+            return kustringa(kustringa(stringToByteArray("3C37029CA595FE4E7E62FCB2F7909B2C"), "C152153D5807784C721A433B5B59636D", kustringb())).substring(0, 32);
+        } catch (Exception localException) {
             return "";
         }
     }
 
-    private void derivePart1() {
+    private void kustringe() {
         try {
-            byte[] res = des3CbcDecrypt(stringToByteArray(rotateHex(this.cardTagUid)), getMasterKeyPart1(), getZeroIv());
-            this.derivedKeyPart1 = toHexString(res).substring(0, 32);
+            this.kub = kustringa(kustringb(this.kua, kustringc(), kustringb())).substring(0, 32);
         } catch (Exception ignored) {}
     }
 
-    private void derivePart2() {
+    private void kustringf() {
         try {
-            byte[] res = des3CbcDecrypt(stringToByteArray(rotateHex(this.derivedKeyPart1)), getMasterKeyPart2(), this.derivedKeyPart2);
-            this.sessionKey = toHexString(res);
+            this.kue = kustringa(kustringb(this.kub, kustringd(), this.kuc));
         } catch (Exception ignored) {}
     }
 
-    public void init(String cardTagUid, String keySeed, String challengeRndB) {
-        this.cardTagUid = cardTagUid;
-        this.derivedKeyPart2 = keySeed;
-        this.sessionChallenge = challengeRndB;
-        derivePart1();
-        derivePart2();
+    public static byte[] stringToByteArray(String paramString) {
+        int k = paramString.length();
+        byte[] arrayOfByte = new byte[k / 2];
+        for (int i = 0; i < k - 1; i += 2) {
+            arrayOfByte[i / 2] = ((byte) (Integer.parseInt(paramString.substring(i, i + 2), 16) & 0xFF));
+        }
+        return arrayOfByte;
     }
 
-    public String generateChallengeResponse() {
+    /**
+     * Menghasilkan 32-karakter (16-byte) challenge response untuk dikirimkan
+     * ke kartu Brizzi via APDU: 90 AF 00 00 10 [response] 00
+     */
+    public String kustringa() {
         try {
-            byte[] partA = des3CbcDecrypt(stringToByteArray(des3EncryptBlock(this.sessionChallenge, this.sessionKey)), getZeroIv());
-            String str1 = rotateHex(toHexString(partA));
-
-            byte[] partB = stringToByteArray("1122334455667788");
-            byte[] xorB = xorBytes(partB, stringToByteArray(this.sessionChallenge));
-            String str2 = des3EncryptBlock(toHexString(xorB), this.sessionKey);
-
-            byte[] xorC = xorBytes(stringToByteArray(str1), stringToByteArray(str2));
-            String str3 = des3EncryptBlock(toHexString(xorC), this.sessionKey);
-
-            return (str2 + str3).toUpperCase();
-        } catch (Exception e) {
+            String str1 = kustringb(kustringa(kustringa(stringToByteArray(kustringa(kustringc(this.kud, this.kue))), stringToByteArray(kustringb()))));
+            String str2 = kustringa(kustringc(kustringa(kustringa(stringToByteArray("1122334455667788"), stringToByteArray(this.kud))), this.kue));
+            StringBuilder localStringBuilder = new StringBuilder();
+            localStringBuilder.append(str2);
+            localStringBuilder.append(kustringa(kustringc(kustringa(kustringa(stringToByteArray(str1), stringToByteArray(str2))), this.kue)));
+            return localStringBuilder.toString();
+        } catch (Exception localException) {
             return "";
         }
     }
 
-    public static byte[] stringToByteArray(String hex) {
-        int len = hex.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
+    public String kustringa(byte[] paramArrayOfByte) {
+        StringBuilder str = new StringBuilder();
+        for (byte b : paramArrayOfByte) {
+            String hex = Integer.toHexString(b & 0xFF);
+            if (hex.length() == 1) {
+                str.append("0");
+            }
+            str.append(hex);
         }
-        return data;
+        return str.toString().toUpperCase();
     }
 
-    public static String toHexString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b & 0xFF));
-        }
-        return sb.toString();
+    public void init(String paramString1, String paramString2, String paramString3) {
+        this.kua = paramString1;
+        this.kuc = paramString2;
+        this.kud = paramString3;
+        kustringe();
+        kustringf();
     }
 
-    private static byte[] desEcbDecrypt(byte[] data, byte[] keyBytes) {
+    public byte[] kustringa(String paramString1, String paramString2) {
+        SecretKeySpec keySpec = new SecretKeySpec(stringToByteArray(paramString2), "DES");
         try {
-            SecretKeySpec key = new SecretKeySpec(keyBytes, "DES");
-            Cipher cipher = Cipher.getInstance("DES/ECB/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            return cipher.doFinal(data);
+            Cipher localCipher = Cipher.getInstance("DES/ECB/NoPadding");
+            localCipher.init(Cipher.ENCRYPT_MODE, keySpec);
+            return localCipher.doFinal(stringToByteArray(paramString1));
         } catch (Exception e) {
             return new byte[0];
         }
     }
 
-    private static byte[] des3CbcDecrypt(byte[] data, String keyHex, String ivHex) {
+    public byte[] kustringa(byte[] paramArrayOfByte, String paramString1, String paramString2) {
+        byte[] keyBytes;
+        if (paramString1.length() == 48) {
+            keyBytes = stringToByteArray(paramString1);
+        } else if (paramString1.length() == 32) {
+            keyBytes = stringToByteArray(paramString1 + paramString1.substring(0, 16));
+        } else if (paramString1.length() == 16) {
+            keyBytes = stringToByteArray(paramString1 + paramString1 + paramString1);
+        } else {
+            keyBytes = stringToByteArray("00000000000000000000000000000000");
+        }
+        SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "DESede");
+        IvParameterSpec ivSpec = new IvParameterSpec(stringToByteArray(paramString2));
         try {
-            byte[] keyBytes = prepareDes3Key(keyHex);
-            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "DESede");
-            AlgorithmParameterSpec iv = new IvParameterSpec(stringToByteArray(ivHex));
-            Cipher cipher = Cipher.getInstance("DESede/CBC/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
-            return cipher.doFinal(data);
+            Cipher localCipher = Cipher.getInstance("DESede/CBC/NoPadding");
+            localCipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+            return localCipher.doFinal(paramArrayOfByte);
         } catch (Exception e) {
             return new byte[0];
         }
     }
 
-    private static byte[] des3CbcDecrypt(byte[] data, String ivHex) {
-        return des3CbcDecrypt(data, "00000000000000000000000000000000", ivHex);
-    }
-
-    private static String des3EncryptBlock(String dataHex, String keyHex) {
-        try {
-            String k1 = keyHex.substring(0, 16);
-            String k2 = keyHex.substring(16, 32);
-
-            byte[] b1 = desEcbDecrypt(stringToByteArray(dataHex), stringToByteArray(k1));
-            byte[] b2 = desEcbEncrypt(b1, stringToByteArray(k2));
-            byte[] b3 = desEcbDecrypt(b2, stringToByteArray(k1));
-            return toHexString(b3);
-        } catch (Exception e) {
-            return "";
+    public byte[] kustringa(byte[] paramArrayOfByte1, byte[] paramArrayOfByte2) {
+        byte[] arrayOfByte = new byte[paramArrayOfByte1.length];
+        if (paramArrayOfByte2.length == 0) {
+            throw new IllegalArgumentException("empty security key");
         }
+        int i = 0;
+        for (int j = 0; j < paramArrayOfByte1.length; j++) {
+            arrayOfByte[j] = ((byte) (paramArrayOfByte1[j] ^ paramArrayOfByte2[i]));
+            i++;
+            if (i >= paramArrayOfByte2.length) {
+                i = 0;
+            }
+        }
+        return arrayOfByte;
     }
 
-    private static byte[] desEcbEncrypt(byte[] data, byte[] keyBytes) {
+    public byte[] kustringb(String paramString1, String paramString2) {
+        SecretKeySpec keySpec = new SecretKeySpec(stringToByteArray(paramString2), "DES");
         try {
-            SecretKeySpec key = new SecretKeySpec(keyBytes, "DES");
-            Cipher cipher = Cipher.getInstance("DES/ECB/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            return cipher.doFinal(data);
+            Cipher localCipher = Cipher.getInstance("DES/ECB/NoPadding");
+            localCipher.init(Cipher.DECRYPT_MODE, keySpec);
+            return localCipher.doFinal(stringToByteArray(paramString1));
         } catch (Exception e) {
             return new byte[0];
         }
     }
 
-    private static byte[] prepareDes3Key(String keyHex) {
-        if (keyHex.length() == 48) {
-            return stringToByteArray(keyHex);
-        } else if (keyHex.length() == 32) {
-            return stringToByteArray(keyHex + keyHex.substring(0, 16));
-        } else if (keyHex.length() == 16) {
-            return stringToByteArray(keyHex + keyHex + keyHex);
+    public byte[] kustringb(String paramString1, String paramString2, String paramString3) {
+        byte[] keyBytes;
+        if (paramString2.length() == 48) {
+            keyBytes = stringToByteArray(paramString2);
+        } else if (paramString2.length() == 32) {
+            keyBytes = stringToByteArray(paramString2 + paramString2.substring(0, 16));
+        } else if (paramString2.length() == 16) {
+            keyBytes = stringToByteArray(paramString2 + paramString2 + paramString2);
+        } else {
+            keyBytes = stringToByteArray("00000000000000000000000000000000");
         }
-        return stringToByteArray("000000000000000000000000000000000000000000000000");
+        SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "DESede");
+        IvParameterSpec ivSpec = new IvParameterSpec(stringToByteArray(paramString3));
+        try {
+            Cipher localCipher = Cipher.getInstance("DESede/CBC/NoPadding");
+            localCipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            return localCipher.doFinal(stringToByteArray(paramString1));
+        } catch (Exception e) {
+            return new byte[0];
+        }
     }
 
-    private static byte[] xorBytes(byte[] a, byte[] b) {
-        byte[] res = new byte[a.length];
-        for (int i = 0; i < a.length; i++) {
-            res[i] = (byte) (a[i] ^ b[i % b.length]);
+    public byte[] kustringc(String paramString1, String paramString2) {
+        String str = paramString2.substring(0, 16);
+        String str2 = paramString2.substring(16, 32);
+        try {
+            return stringToByteArray(kustringa(kustringb(kustringa(kustringa(kustringa(kustringb(paramString1, str)), str2)), str)));
+        } catch (Exception e) {
+            return new byte[0];
         }
-        return res;
     }
 }

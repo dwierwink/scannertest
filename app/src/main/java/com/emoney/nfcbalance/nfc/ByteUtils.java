@@ -102,4 +102,17 @@ public class ByteUtils {
             return clean;
         }
     }
+
+    /**
+     * Membalik urutan pasangan hex byte (Little Endian ke Big Endian)
+     * e.g. "A00F0000" -> "00000FA0"
+     */
+    public static String reverseHexPairs(String hex) {
+        if (hex == null || hex.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(hex.length());
+        for (int i = hex.length() - 2; i >= 0; i -= 2) {
+            sb.append(hex.substring(i, i + 2));
+        }
+        return sb.toString();
+    }
 }

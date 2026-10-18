@@ -290,7 +290,10 @@ public class IsoDepReader {
 
     private static boolean tryBrizzi(IsoDep isoDep, IsoResult result) {
         try {
-            // Select App 1: 90 5A 00 00 03 01 00 00 00
+            // Tag UID (hex string uppercase)
+            String tagId = ByteUtils.toHexString(isoDep.getTag().getId());
+
+            // 1. Select App 1: 90 5A 00 00 03 01 00 00 00
             byte[] resp = isoDep.transceive(CMD_SELECT_BRIZZI_APP1);
             if (!isStatusOk(resp)) {
                 resp = isoDep.transceive(ByteUtils.hexStringToByteArray("905A00000300000100"));
@@ -301,121 +304,126 @@ public class IsoDepReader {
                 Log.d(TAG, "BRI Brizzi selected successfully");
 
                 String rawCardNumber = null;
-                // Baca File 0 untuk nomor kartu (90 BD 00 00 07 00 00 00 00 17 00 00 00)
+                // 2. Baca File 0 untuk nomor kartu (Brizzid: 90 BD 00 00 07 00 00 00 00 17 00 00 00)
                 try {
                     byte[] cardInfoResp = isoDep.transceive(CMD_READ_BRIZZI_FILE0);
-                    if (isStatusOk(cardInfoResp)) {
-                        String hex = ByteUtils.toHexString(cardInfoResp);
-                        if (hex.length() >= 22) {
-                            rawCardNumber = hex.substring(6, 22);
-                            result.parsedCardNumber = ByteUtils.formatCardNumber(rawCardNumber);
-                        }
+                    String hexFile0 = ByteUtils.toHexString(cardInfoResp);
+                    if (hexFile0.length() >= 22) {
+                        rawCardNumber = hexFile0.substring(6, 22);
+                        result.parsedCardNumber = ByteUtils.formatCardNumber(rawCardNumber);
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "Brizzi File 0 read error: " + e.getMessage());
                 }
 
-                // Jalur 1: Coba Read Value File 0 langsung di App 1 (90 6C 00 00 01 00 00)
+                // 3. Baca File 1 untuk status kartu (Brizzie: 90 BD 00 00 07 01 00 00 00 20 00 00 00)
                 try {
-                    byte[] valResp = isoDep.transceive(CMD_READ_BRIZZI_VALUE);
-                    if (isStatusOk(valResp) && valResp.length >= 6) {
-                        long bal = ByteUtils.bytesToLongLittleEndian(valResp, 0, 4);
-                        if (bal >= 0 && bal <= 20_000_000) {
-                            result.balance = bal;
-                            result.balanceFound = true;
-                            return true;
-                        }
-                    }
+                    isoDep.transceive(ByteUtils.hexStringToByteArray("90BD0000070100000020000000"));
                 } catch (Exception ignored) {}
 
-                // Jalur 2: Select App 3 (Purse Application: 90 5A 00 00 03 03 00 00 00)
+                // 4. Select App 3 (Brizzic: 90 5A 00 00 03 03 00 00 00)
+                isoDep.transceive(CMD_SELECT_BRIZZI_APP3);
+
+                // 5. Send Auth (Brizzif: 90 0A 00 00 01 00 00)
                 try {
-                    byte[] selApp3Resp = isoDep.transceive(CMD_SELECT_BRIZZI_APP3);
-                    if (isStatusOk(selApp3Resp)) {
-                        // Coba baca value file langsung
-                        byte[] valResp3 = isoDep.transceive(CMD_READ_BRIZZI_VALUE);
-                        if (isStatusOk(valResp3) && valResp3.length >= 6) {
-                            long bal = ByteUtils.bytesToLongLittleEndian(valResp3, 0, 4);
-                            if (bal >= 0 && bal <= 20_000_000) {
-                                result.balance = bal;
-                                result.balanceFound = true;
-                                return true;
-                            }
+                    byte[] authResp = isoDep.transceive(CMD_AUTH_BRIZZI_APP3);
+                    String authHex = ByteUtils.toHexString(authResp);
+                    if (authHex.endsWith("91AF")) {
+                        String rndB = authHex.substring(0, authHex.length() - 4);
+                        String cardNumForAuth = (rawCardNumber != null && !rawCardNumber.isEmpty()) ? rawCardNumber : "5379000000000000";
+
+                        BrizziAuthHelper authHelper = new BrizziAuthHelper();
+                        authHelper.init(cardNumForAuth + tagId + "FF", "0000030080000000", rndB);
+                        String challengeRespHex = authHelper.kustringa();
+
+                        if (challengeRespHex.length() >= 32) {
+                            byte[] authStep2 = ByteUtils.hexStringToByteArray("90AF000010" + challengeRespHex.substring(0, 32) + "00");
+                            byte[] authFinalResp = isoDep.transceive(authStep2);
+                            Log.d(TAG, "Brizzi Auth Step 2 response: " + ByteUtils.toHexString(authFinalResp));
                         }
-
-                        // Jika butuh autentikasi 3DES session challenge
-                        byte[] authResp = isoDep.transceive(CMD_AUTH_BRIZZI_APP3);
-                        if (authResp != null && authResp.length >= 10) {
-                            String authHex = ByteUtils.toHexString(authResp);
-                            if (authHex.endsWith("91AF")) {
-                                String rndBHex = authHex.substring(0, authHex.length() - 4);
-                                if (rndBHex.length() >= 16) {
-                                    byte[] uidBytes = isoDep.getTag().getId();
-                                    String tagUidHex = ByteUtils.toHexString(uidBytes);
-                                    String cardNumStr = rawCardNumber != null ? rawCardNumber : "5379000000000000";
-
-                                    BrizziAuthHelper authHelper = new BrizziAuthHelper();
-                                    authHelper.init(cardNumStr + tagUidHex + "FF", "0000030080000000", rndBHex.substring(0, 16));
-                                    String challengeRespHex = authHelper.generateChallengeResponse();
-
-                                    if (challengeRespHex.length() >= 32) {
-                                        byte[] authStep2 = ByteUtils.hexStringToByteArray("90AF000010" + challengeRespHex.substring(0, 32) + "00");
-                                        byte[] authFinalResp = isoDep.transceive(authStep2);
-                                        if (isStatusOk(authFinalResp)) {
-                                            Log.d(TAG, "Brizzi App 3 authenticated successfully!");
-                                            byte[] postAuthValResp = isoDep.transceive(CMD_READ_BRIZZI_VALUE);
-                                            if (isStatusOk(postAuthValResp) && postAuthValResp.length >= 6) {
-                                                long bal = ByteUtils.bytesToLongLittleEndian(postAuthValResp, 0, 4);
-                                                result.balance = bal;
-                                                result.balanceFound = true;
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Baca File 3 (Data Purse): 90 BD 00 00 07 03 00 00 00 07 00 00 00
-                        try {
-                            byte[] f3Resp = isoDep.transceive(ByteUtils.hexStringToByteArray("90BD0000070300000007000000"));
-                            if (isStatusOk(f3Resp) && f3Resp.length >= 6) {
-                                long bal = ByteUtils.bytesToLongLittleEndian(f3Resp, 0, 4);
-                                if (bal >= 0 && bal <= 20_000_000) {
-                                    result.balance = bal;
-                                    result.balanceFound = true;
-                                    return true;
-                                }
-                            }
-                        } catch (Exception ignored) {}
                     }
                 } catch (Exception e) {
-                    Log.d(TAG, "Brizzi App 3 error: " + e.getMessage());
+                    Log.d(TAG, "Brizzi Auth error: " + e.getMessage());
                 }
 
-                // Jalur 3: Baca Log Transaksi Terakhir (90 BB 00 00 07 01 00 00 00 00 00 00 00)
+                // 6. Read File 3 (Brizzii: 90 BD 00 00 07 03 00 00 00 07 00 00 00)
+                // Pada protokol resmi Brizzi, pembacaan File 3 WAJIB sebelum 90 6C
+                String strFile3 = "";
                 try {
-                    isoDep.transceive(CMD_SELECT_BRIZZI_APP1);
-                    byte[] logResp = isoDep.transceive(ByteUtils.hexStringToByteArray("90BB0000070100000000000000"));
-                    if (isStatusOk(logResp) && logResp.length >= 32) {
+                    byte[] f3Resp = isoDep.transceive(ByteUtils.hexStringToByteArray("90BD0000070300000007000000"));
+                    strFile3 = ByteUtils.toHexString(f3Resp);
+                    Log.d(TAG, "Brizzi File 3 response: " + strFile3);
+                } catch (Exception ignored) {}
+
+                // 7. Read Value File (Brizzih: 90 6C 00 00 01 00 00)
+                long parsedBal = -1;
+                try {
+                    byte[] valResp = isoDep.transceive(CMD_READ_BRIZZI_VALUE);
+                    String strVal = ByteUtils.toHexString(valResp);
+                    Log.d(TAG, "Brizzi Value response: " + strVal);
+
+                    if (strVal.length() >= 8) {
+                        String hexVal = strVal.substring(0, 8);
+                        String revHex = ByteUtils.reverseHexPairs(hexVal);
+                        long bal = Long.parseLong(revHex, 16);
+                        if (bal >= 0 && bal <= 20_000_000) {
+                            parsedBal = bal;
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "Brizzi 90 6C error: " + e.getMessage());
+                }
+
+                // 8. Jika 90 6C belum dapat saldo valid, ekstrak dari File 3 jika ada
+                if (parsedBal <= 0 && strFile3.length() >= 8 && !strFile3.startsWith("00000000")) {
+                    try {
+                        String hexVal = strFile3.substring(0, 8);
+                        String revHex = ByteUtils.reverseHexPairs(hexVal);
+                        long candidate = Long.parseLong(revHex, 16);
+                        if (candidate > 0 && candidate <= 20_000_000) {
+                            parsedBal = candidate;
+                        }
+                    } catch (Exception ignored) {}
+                }
+
+                // 9. Fallback ke App 1 Transaction Log (90 BB 00 00 07 01 00 00 00 00 00 00 00)
+                if (parsedBal <= 0) {
+                    try {
+                        isoDep.transceive(CMD_SELECT_BRIZZI_APP1);
+                        byte[] logResp = isoDep.transceive(ByteUtils.hexStringToByteArray("90BB0000070100000000000000"));
                         String logHex = ByteUtils.toHexString(logResp);
                         if (logHex.length() >= 52) {
                             String amtHex = logHex.substring(46, 52);
-                            StringBuilder revHex = new StringBuilder();
-                            for (int k = amtHex.length() - 2; k >= 0; k -= 2) {
-                                revHex.append(amtHex.substring(k, k + 2));
-                            }
-                            long bal = Long.parseLong(revHex.toString(), 16);
-                            if (bal >= 0 && bal <= 20_000_000) {
-                                result.balance = bal;
-                                result.balanceFound = true;
-                                return true;
+                            String revHex = ByteUtils.reverseHexPairs(amtHex);
+                            long candidate = Long.parseLong(revHex, 16);
+                            if (candidate > 0 && candidate <= 20_000_000) {
+                                parsedBal = candidate;
                             }
                         }
-                    }
-                } catch (Exception ignored) {}
+                    } catch (Exception ignored) {}
+                }
 
-                result.balanceFound = true;
+                // 10. Fallback direct 90 6C di App 1 jika varian kartu lama
+                if (parsedBal <= 0) {
+                    try {
+                        isoDep.transceive(CMD_SELECT_BRIZZI_APP1);
+                        byte[] valResp1 = isoDep.transceive(CMD_READ_BRIZZI_VALUE);
+                        if (isStatusOk(valResp1) && valResp1.length >= 6) {
+                            long candidate = ByteUtils.bytesToLongLittleEndian(valResp1, 0, 4);
+                            if (candidate > 0 && candidate <= 20_000_000) {
+                                parsedBal = candidate;
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+
+                if (parsedBal >= 0) {
+                    result.balance = parsedBal;
+                    result.balanceFound = true;
+                } else {
+                    result.balance = 0;
+                    result.balanceFound = true;
+                }
                 return true;
             }
         } catch (Exception e) {

@@ -28,6 +28,7 @@ import {
   BRIZZI_CONFIG,
   JAKCARD_CONFIG,
 } from './apduCommands';
+import { generateBrizziAuthResponse } from './brizziAuth';
 
 // Helper mengecek status word APDU (akhiran 2 byte: 90 00)
 function isSuccessSW(bytes) {
@@ -401,7 +402,7 @@ async function tryParseTapCash(logEntries) {
 /**
  * PARSER 4: BRI Brizzi
  */
-async function tryParseBrizzi(logEntries) {
+async function tryParseBrizzi(logEntries, tagUid) {
   // 1. DESFire Select App 1: 90 5A 00 00 03 01 00 00 00
   let selectResp = await sendApdu(BRIZZI_CONFIG.cmdSelectApp1, logEntries, 'BRI Brizzi DESFire Select App 1');
   
@@ -431,61 +432,92 @@ async function tryParseBrizzi(logEntries) {
     }
   } catch (e) {}
 
-  // 3. Jalur A: Coba Read Value File 0 di App 1 (90 6C 00 00 01 00 00)
+  // 3. Baca File 1 untuk status kartu: 90 BD 00 00 07 01 00 00 00 20 00 00 00
   try {
-    const valResp = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value File 0 (App 1)');
-    if ((isDesfireSuccessSW(valResp) || isSuccessSW(valResp)) && valResp.length >= 6) {
-      balance = readInt32LE(valResp, 0);
+    await sendApdu([0x90, 0xBD, 0x00, 0x00, 0x07, 0x01, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00], logEntries, 'BRI Brizzi Read File 1');
+  } catch (e) {}
+
+  // 4. Select App 3 (Purse Application: 90 5A 00 00 03 03 00 00 00)
+  try {
+    await sendApdu(BRIZZI_CONFIG.cmdSelectApp3, logEntries, 'BRI Brizzi Select App 3 (Purse)');
+
+    // 5. Autentikasi 3DES Key 0: 90 0A 00 00 01 00 00
+    const authResp = await sendApdu([0x90, 0x0A, 0x00, 0x00, 0x01, 0x00, 0x00], logEntries, 'BRI Brizzi Auth Key 0');
+    const authHex = bytesToHex(authResp);
+    if (authHex.endsWith('91AF')) {
+      const rndB = authHex.substring(0, authHex.length - 4);
+      const challengeResponse = generateBrizziAuthResponse(rawNumber, tagUid, rndB);
+      if (challengeResponse && challengeResponse.length >= 32) {
+        const authCmd = hexToBytes('90AF000010' + challengeResponse.substring(0, 32) + '00');
+        await sendApdu(authCmd, logEntries, 'BRI Brizzi Auth Step 2');
+      }
     }
   } catch (e) {}
 
-  // 4. Jalur B: Select App 3 (Purse Application: 90 5A 00 00 03 03 00 00 00)
-  if (balance === null) {
-    try {
-      const selApp3 = await sendApdu(BRIZZI_CONFIG.cmdSelectApp3, logEntries, 'BRI Brizzi Select App 3 (Purse)');
-      if (isDesfireSuccessSW(selApp3) || isSuccessSW(selApp3)) {
-        // Coba Read Value File di App 3
-        const valResp3 = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value (App 3)');
-        if ((isDesfireSuccessSW(valResp3) || isSuccessSW(valResp3)) && valResp3.length >= 6) {
-          balance = readInt32LE(valResp3, 0);
-        }
+  // 6. Baca File 3 (90 BD 00 00 07 03 00 00 00 07 00 00 00) - WAJIB sebelum 90 6C
+  let f3Hex = '';
+  try {
+    const f3Resp = await sendApdu(BRIZZI_CONFIG.cmdReadDataPurse, logEntries, 'BRI Brizzi Read File 3 (Purse State)');
+    f3Hex = bytesToHex(f3Resp);
+  } catch (e) {}
 
-        // Coba File 3 Purse
-        if (balance === null) {
-          const purseDataResp = await sendApdu(BRIZZI_CONFIG.cmdReadDataPurse, logEntries, 'BRI Brizzi Read Data File 3');
-          if ((isDesfireSuccessSW(purseDataResp) || isSuccessSW(purseDataResp)) && purseDataResp.length >= 6) {
-            balance = readInt32LE(purseDataResp, 0);
+  // 7. Baca Value File (90 6C 00 00 01 00 00) -> 4-byte Little Endian balance
+  try {
+    const valResp = await sendApdu(BRIZZI_CONFIG.cmdReadValue, logEntries, 'BRI Brizzi Read Value (Saldo)');
+    const valHex = bytesToHex(valResp);
+    if (valHex.length >= 8) {
+      const hexVal = valHex.substring(0, 8);
+      let revHex = '';
+      for (let k = hexVal.length - 2; k >= 0; k -= 2) {
+        revHex += hexVal.substr(k, 2);
+      }
+      const parsedVal = parseInt(revHex, 16);
+      if (!isNaN(parsedVal) && parsedVal >= 0 && parsedVal <= 20000000) {
+        balance = parsedVal;
+      }
+    }
+  } catch (e) {}
+
+  // 8. Fallback ekstraksi dari File 3 jika 90 6C belum dapat
+  if ((balance === null || balance === 0) && f3Hex.length >= 8 && !f3Hex.startsWith('00000000')) {
+    try {
+      const hexVal = f3Hex.substring(0, 8);
+      let revHex = '';
+      for (let k = hexVal.length - 2; k >= 0; k -= 2) {
+        revHex += hexVal.substr(k, 2);
+      }
+      const cand = parseInt(revHex, 16);
+      if (!isNaN(cand) && cand > 0 && cand <= 20000000) {
+        balance = cand;
+      }
+    } catch (e) {}
+  }
+
+  // 9. Jalur Fallback C: Baca Log Mutasi Transaksi Terakhir (90 BB 00 00 07 01 00 00 00 00 00 00 00)
+  if (balance === null || balance === 0) {
+    try {
+      await sendApdu(BRIZZI_CONFIG.cmdSelectApp1, logEntries, 'BRI Brizzi Re-Select App 1 for Log');
+      const logStartResp = await sendApdu(BRIZZI_CONFIG.cmdReadLogStart, logEntries, 'BRI Brizzi Read Log Start');
+      if (logStartResp && logStartResp.length >= 32) {
+        const logHex = bytesToHex(logStartResp);
+        if (logHex.length >= 52) {
+          const amtHex = logHex.substring(46, 52);
+          let revHex = '';
+          for (let k = amtHex.length - 2; k >= 0; k -= 2) {
+            revHex += amtHex.substr(k, 2);
+          }
+          const amt = parseInt(revHex, 16) || 0;
+          if (amt > 0) {
+            history.push({
+              type: 'Pembayaran (e-Toll / Kasir)',
+              amount: amt
+            });
+            balance = amt;
           }
         }
       }
     } catch (e) {}
   }
-
-  // 5. Jalur C: Baca Log Mutasi Transaksi Terakhir (90 BB 00 00 07 01 00 00 00 00 00 00 00)
-  try {
-    await sendApdu(BRIZZI_CONFIG.cmdSelectApp1, logEntries, 'BRI Brizzi Re-Select App 1 for Log');
-    const logStartResp = await sendApdu(BRIZZI_CONFIG.cmdReadLogStart, logEntries, 'BRI Brizzi Read Log Start');
-    if (logStartResp && logStartResp.length >= 32) {
-      const logHex = bytesToHex(logStartResp);
-      if (logHex.length >= 52) {
-        const amtHex = logHex.substring(46, 52);
-        let revHex = '';
-        for (let k = amtHex.length - 2; k >= 0; k -= 2) {
-          revHex += amtHex.substr(k, 2);
-        }
-        const amt = parseInt(revHex, 16) || 0;
-        if (amt > 0) {
-          history.push({
-            type: 'Payment (e-Toll)',
-            amount: amt
-          });
-          if (balance === null) {
-            balance = amt;
-          }
-        }
-      }
-    }
-  } catch (e) {}
 
   return {
     bankName: 'BRI Brizzi',
@@ -606,7 +638,7 @@ export async function scanRealNfcCard(callbacks = {}) {
     if (!cardResult) {
       if (onProgress) onProgress(0.85);
       try {
-        cardResult = await tryParseBrizzi(logEntries);
+        cardResult = await tryParseBrizzi(logEntries, rawUid);
       } catch (e) {}
     }
 
