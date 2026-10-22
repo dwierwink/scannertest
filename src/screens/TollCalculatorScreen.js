@@ -600,19 +600,28 @@ export default function TollCalculatorScreen({
                 </TouchableOpacity>
               </View>
 
-              {/* Search Bar Input */}
-              <View style={tw`flex-row items-center bg-slate-100 rounded-xl px-3 py-2 mb-3`}>
-                <Text style={tw`text-slate-400 mr-2`}>🔍</Text>
+              {/* Search Bar Input (Pencarian Nama Gerbang Asal & Tujuan) */}
+              <View style={tw`flex-row items-center bg-slate-100 rounded-xl px-3 py-2.5 mb-3 border border-slate-200`}>
+                <Text style={tw`text-slate-400 mr-2 text-sm`}>🔍</Text>
                 <TextInput
                   value={searchQuery}
                   onChangeText={setSearchQuery}
-                  placeholder="Cari nama gerbang atau wilayah..."
+                  placeholder={
+                    modalType === 'asal'
+                      ? 'Ketik nama gerbang asal (misal: Dupak, Waru, Malang)...'
+                      : 'Ketik nama gerbang tujuan (misal: Madiun, Pasuruan, Bunder)...'
+                  }
                   placeholderTextColor="#94A3B8"
                   style={tw`flex-1 text-slate-800 text-xs font-semibold py-1`}
+                  autoFocus={true}
+                  returnKeyType="search"
                 />
                 {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Text style={tw`text-slate-400 font-bold text-xs`}>✕</Text>
+                  <TouchableOpacity
+                    onPress={() => setSearchQuery('')}
+                    style={tw`w-5 h-5 rounded-full bg-slate-200 items-center justify-center`}
+                  >
+                    <Text style={tw`text-slate-500 font-bold text-[10px]`}>✕</Text>
                   </TouchableOpacity>
                 )}
               </View>

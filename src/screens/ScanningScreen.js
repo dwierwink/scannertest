@@ -21,7 +21,6 @@ import { scanRealNfcCard, stopNfcScan, checkNfcAvailability } from '../services/
 export default function ScanningScreen({
   onBack,
   onScanSuccess,
-  onEnterManually,
 }) {
   const [statusText, setStatusText] = useState('Mendengarkan sensor NFC...');
   const [progress, setProgress] = useState(0.15);
@@ -209,7 +208,7 @@ export default function ScanningScreen({
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Top Navigation Bar: Back & Enter Manually */}
+        {/* Top Navigation Bar: Back Arrow */}
         <View style={tw`flex-row justify-between items-center mb-3`}>
           <TouchableOpacity
             onPress={onBack}
@@ -217,16 +216,6 @@ export default function ScanningScreen({
             activeOpacity={0.7}
           >
             <Text style={tw`text-slate-700 text-lg font-bold`}>‹</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={onEnterManually}
-            activeOpacity={0.7}
-            style={tw`py-1.5 px-3 rounded-full bg-indigo-50 border border-indigo-100`}
-          >
-            <Text style={tw`text-indigo-600 font-bold text-xs`}>
-              Enter Manually
-            </Text>
           </TouchableOpacity>
         </View>
 
@@ -261,29 +250,6 @@ export default function ScanningScreen({
             </View>
           )}
 
-          {/* Opsi Uji Coba Cepat Semua Kartu Bank (Simulator Test) */}
-          <View style={[tw`items-center w-full max-w-sm`, { marginTop: isCompact ? 8 : 12 }]}>
-            <Text style={tw`text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2`}>
-              Simulasi Cepat Kartu Bank:
-            </Text>
-            <View style={tw`flex-row flex-wrap justify-center gap-1.5`}>
-              {[
-                { id: 'mandiri', label: 'Mandiri' },
-                { id: 'flazz', label: 'Flazz' },
-                { id: 'tapcash', label: 'TapCash' },
-                { id: 'brizzi', label: 'Brizzi' },
-                { id: 'jakcard', label: 'JakCard' },
-              ].map((b) => (
-                <TouchableOpacity
-                  key={b.id}
-                  onPress={() => triggerSimulationCard(b.id)}
-                  style={tw`bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm active:bg-slate-50`}
-                >
-                  <Text style={tw`text-[11px] font-bold text-slate-700`}>{b.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
         </View>
 
         {/* Bottom Bar: Continue Button */}

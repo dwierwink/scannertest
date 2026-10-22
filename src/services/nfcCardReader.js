@@ -574,7 +574,7 @@ export async function scanRealNfcCard(callbacks = {}) {
       success: false,
       isRealCard: false,
       error: 'EXPO_GO_UNSUPPORTED',
-      message: 'Expo Go tidak mendukung hardware NFC native. Silakan gunakan opsi Enter Manually atau pasang file APK.',
+      message: 'Expo Go tidak mendukung hardware NFC native. Silakan pasang file APK di HP Android untuk membaca NFC.',
       apduLogs: []
     };
   }

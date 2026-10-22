@@ -11,9 +11,14 @@ import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -174,32 +179,6 @@ public class MainActivity extends AppCompatActivity {
         scanDialog.setContentView(dialogView);
 
         dialogView.findViewById(R.id.btnDialogClose).setOnClickListener(v -> scanDialog.dismiss());
-        dialogView.findViewById(R.id.btnDialogManual).setOnClickListener(v -> {
-            scanDialog.dismiss();
-            displaySimulatedCard(0);
-        });
-
-        // Quick simulation taps inside dialog
-        dialogView.findViewById(R.id.btnSimulateMandiri).setOnClickListener(v -> {
-            scanDialog.dismiss();
-            displaySimulatedCard(0);
-        });
-        dialogView.findViewById(R.id.btnSimulateFlazz).setOnClickListener(v -> {
-            scanDialog.dismiss();
-            displaySimulatedCard(1);
-        });
-        dialogView.findViewById(R.id.btnSimulateTapCash).setOnClickListener(v -> {
-            scanDialog.dismiss();
-            displaySimulatedCard(2);
-        });
-        View btnBrizzi = dialogView.findViewById(R.id.btnSimulateBrizzi);
-        if (btnBrizzi != null) {
-            btnBrizzi.setOnClickListener(v -> {
-                scanDialog.dismiss();
-                displaySimulatedCard(3);
-            });
-        }
-
         scanDialog.show();
     }
 
@@ -501,38 +480,26 @@ public class MainActivity extends AppCompatActivity {
                     .show();
         });
 
-        List<TollDataHelper.Gate> gates = TollDataHelper.getAllGates();
-        String[] gateNamesWithRegion = new String[gates.size()];
-        for (int i = 0; i < gates.size(); i++) {
-            gateNamesWithRegion[i] = gates.get(i).name + " (" + gates.get(i).wilayah + ")";
-        }
-
-        // 2. Pilih Gerbang Asal
+        // 2. Pilih Gerbang Asal (Dengan Fitur Pencarian)
         boxGerbangAsal.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Pilih Gerbang Asal Masuk Tol")
-                    .setItems(gateNamesWithRegion, (d, which) -> {
-                        selectedAsalGate = gates.get(which);
-                        tvSelectedAsal.setText(selectedAsalGate.name);
-                        tvSelectedAsal.setTextColor(Color.parseColor("#0F172A"));
-                        updateUI.run();
-                    })
-                    .setNegativeButton("Batal", null)
-                    .show();
+            openGateSearchDialog(true, () -> {
+                if (selectedAsalGate != null) {
+                    tvSelectedAsal.setText(selectedAsalGate.name);
+                    tvSelectedAsal.setTextColor(Color.parseColor("#0F172A"));
+                    updateUI.run();
+                }
+            });
         });
 
-        // 3. Pilih Gerbang Tujuan
+        // 3. Pilih Gerbang Tujuan (Dengan Fitur Pencarian)
         boxGerbangTujuan.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Pilih Gerbang Keluar Tol")
-                    .setItems(gateNamesWithRegion, (d, which) -> {
-                        selectedTujuanGate = gates.get(which);
-                        tvSelectedTujuan.setText(selectedTujuanGate.name);
-                        tvSelectedTujuan.setTextColor(Color.parseColor("#0F172A"));
-                        updateUI.run();
-                    })
-                    .setNegativeButton("Batal", null)
-                    .show();
+            openGateSearchDialog(false, () -> {
+                if (selectedTujuanGate != null) {
+                    tvSelectedTujuan.setText(selectedTujuanGate.name);
+                    tvSelectedTujuan.setTextColor(Color.parseColor("#0F172A"));
+                    updateUI.run();
+                }
+            });
         });
 
         // 4. Tambah Tarif
@@ -565,6 +532,114 @@ public class MainActivity extends AppCompatActivity {
         });
 
         tollDialog.show();
+    }
+
+    /**
+     * Dialog Pencarian Gerbang Tol Interaktif (Live Search) untuk Gerbang Asal & Tujuan
+     */
+    private void openGateSearchDialog(boolean isAsal, Runnable onSelected) {
+        BottomSheetDialog gateDialog = new BottomSheetDialog(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_select_gate, null);
+        gateDialog.setContentView(dialogView);
+
+        TextView tvTitle = dialogView.findViewById(R.id.tvGateDialogTitle);
+        TextView btnClose = dialogView.findViewById(R.id.btnCloseGateDialog);
+        EditText etSearch = dialogView.findViewById(R.id.etGateSearch);
+        TextView btnClear = dialogView.findViewById(R.id.btnClearGateSearch);
+        ListView lvGates = dialogView.findViewById(R.id.lvGates);
+        TextView tvEmpty = dialogView.findViewById(R.id.tvGateEmpty);
+
+        tvTitle.setText(isAsal ? "Pilih Gerbang Asal (Masuk)" : "Pilih Gerbang Tujuan (Keluar)");
+        etSearch.setHint(isAsal ? "Cari gerbang asal (misal: Dupak, Waru, Malang)..." : "Cari gerbang tujuan (misal: Madiun, Pasuruan)...");
+
+        btnClose.setOnClickListener(v -> gateDialog.dismiss());
+
+        List<TollDataHelper.Gate> allGates = TollDataHelper.getAllGates();
+        List<TollDataHelper.Gate> currentList = new ArrayList<>(allGates);
+
+        BaseAdapter adapter = new BaseAdapter() {
+            @Override
+            public int getCount() {
+                return currentList.size();
+            }
+
+            @Override
+            public Object getItem(int position) {
+                return currentList.get(position);
+            }
+
+            @Override
+            public long getItemId(int position) {
+                return position;
+            }
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = getLayoutInflater().inflate(R.layout.item_gate_select, parent, false);
+                }
+                TollDataHelper.Gate gate = currentList.get(position);
+                TextView tvName = convertView.findViewById(R.id.tvGateItemName);
+                TextView tvDetail = convertView.findViewById(R.id.tvGateItemDetail);
+                TextView tvKm = convertView.findViewById(R.id.tvGateItemKm);
+
+                tvName.setText(gate.name);
+                tvDetail.setText(gate.wilayah + " • " + gate.ruas);
+                tvKm.setText("KM " + gate.km);
+
+                return convertView;
+            }
+        };
+
+        lvGates.setAdapter(adapter);
+
+        // Filter realtime saat pengguna mengetik
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim().toLowerCase();
+                btnClear.setVisibility(query.length() > 0 ? View.VISIBLE : View.GONE);
+
+                currentList.clear();
+                if (query.isEmpty()) {
+                    currentList.addAll(allGates);
+                } else {
+                    for (TollDataHelper.Gate g : allGates) {
+                        if (g.name.toLowerCase().contains(query) ||
+                                g.wilayah.toLowerCase().contains(query) ||
+                                g.ruas.toLowerCase().contains(query)) {
+                            currentList.add(g);
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged();
+                tvEmpty.setVisibility(currentList.isEmpty() ? View.VISIBLE : View.GONE);
+                lvGates.setVisibility(currentList.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        btnClear.setOnClickListener(v -> etSearch.setText(""));
+
+        lvGates.setOnItemClickListener((parent, view, position, id) -> {
+            TollDataHelper.Gate selected = currentList.get(position);
+            if (isAsal) {
+                selectedAsalGate = selected;
+            } else {
+                selectedTujuanGate = selected;
+            }
+            gateDialog.dismiss();
+            if (onSelected != null) {
+                onSelected.run();
+            }
+        });
+
+        gateDialog.show();
     }
 
     @Override

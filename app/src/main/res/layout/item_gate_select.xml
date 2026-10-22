@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="16dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvGateItemName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#0F172A"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:text="Nama Gerbang" />
+
+        <TextView
+            android:id="@+id/tvGateItemDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#64748B"
+            android:textSize="11sp"
+            android:text="Wilayah • Ruas Tol" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvGateItemKm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#94A3B8"
+        android:textSize="11sp"
+        android:text="KM 0" />
+
+</LinearLayout>

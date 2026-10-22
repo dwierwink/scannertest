@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Cek Saldo e-Money</string>
+    <string name="app_name">NFC E-TOLL</string>
     <string name="header_subtitle">Tempelkan kartu di belakang HP untuk cek saldo</string>
 
     <!-- Status NFC -->

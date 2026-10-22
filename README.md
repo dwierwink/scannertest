@@ -1,4 +1,4 @@
-# 💳 Aplikasi Cek Saldo e-Money & e-Toll (React Native + Tailwind CSS)
+# 💳 NFC E-TOLL (Cek Saldo & Kalkulator Tarif Tol)
 
 Aplikasi mobile berbasis **React Native** dengan styling murni **Tailwind CSS (`twrnc`)** dan engine komunikasi **NFC IsoDep (ISO 7816-4 / DESFire)** untuk membaca saldo kartu uang elektronik perbankan Indonesia secara **100% OFFLINE** langsung dari chip kartu fisik tanpa internet, tanpa server perbankan, dan tanpa simulasi gimmick.
 
