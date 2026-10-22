@@ -26,6 +26,7 @@ export default function CardDetailsScreen({
   cardData,
   onBack,
   onScanAnother,
+  onOpenTollCalculator,
 }) {
   const [nameOnCard, setNameOnCard] = useState(cardData?.nameOnCard || '');
   const [cardNumber, setCardNumber] = useState(cardData?.cardNumber || '4747 4747 4747 4747');
@@ -109,6 +110,18 @@ export default function CardDetailsScreen({
               </Text>
             </View>
           </View>
+
+          {/* Tombol Cek / Hitung Tarif Tol dengan Saldo Kartu Ini */}
+          <TouchableOpacity
+            onPress={onOpenTollCalculator}
+            style={tw`bg-blue-50 border border-blue-200 py-2.5 px-4 rounded-xl items-center flex-row justify-center mb-2 shadow-sm`}
+            activeOpacity={0.8}
+          >
+            <Text style={tw`text-base mr-2`}>🛣️</Text>
+            <Text style={tw`text-blue-700 font-bold text-xs`}>
+              Hitung Tarif Tol dengan Saldo Ini ➔
+            </Text>
+          </TouchableOpacity>
 
           {/* Form Field 1: Card Number */}
           <View style={tw`mt-2 mb-2.5`}>

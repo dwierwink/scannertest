@@ -157,6 +157,20 @@
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:cornerRadius="16dp" />
+
+                <!-- Tombol Buka Kalkulator Tarif Tol (Screen Home) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMainTollCalc"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#0284C7"
+                    android:text="🛣️ Kalkulator Tarif Tol Jatim"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp" />
             </LinearLayout>
 
             <!-- ========================================================
@@ -460,6 +474,20 @@
                     android:textColor="#94A3B8"
                     android:textSize="11sp"
                     android:layout_marginBottom="14dp" />
+
+                <!-- Action Button Hitung Tarif Tol dengan Saldo Ini -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnResultTollCalc"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="10dp"
+                    android:backgroundTint="#0284C7"
+                    android:text="🛣️ Hitung Tarif Tol dengan Saldo Ini"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp" />
 
                 <!-- Action Button Continue / Rescan -->
                 <com.google.android.material.button.MaterialButton

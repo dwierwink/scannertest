@@ -8,6 +8,7 @@ import tw from 'twrnc';
 import HomeScreen from './src/screens/HomeScreen';
 import ScanningScreen from './src/screens/ScanningScreen';
 import CardDetailsScreen from './src/screens/CardDetailsScreen';
+import TollCalculatorScreen from './src/screens/TollCalculatorScreen';
 
 export default function App() {
   // Layar aktif: 'home' (Screen 1) | 'scanning' (Screen 3) | 'card_details' (Screen 2)
@@ -98,6 +99,10 @@ export default function App() {
             setCurrentScreen('scanning');
           }}
           onSelectSavedCard={handleSelectSavedCard}
+          onOpenTollCalculator={() => {
+            triggerHaptic('light');
+            setCurrentScreen('toll_calculator');
+          }}
           scannedCards={scannedCards}
         />
       )}
@@ -126,6 +131,21 @@ export default function App() {
             triggerHaptic('light');
             setCurrentScreen('scanning');
           }}
+          onOpenTollCalculator={() => {
+            triggerHaptic('light');
+            setCurrentScreen('toll_calculator');
+          }}
+        />
+      )}
+
+      {/* Screen 4: Kalkulator Tarif Tol Jawa Timur */}
+      {currentScreen === 'toll_calculator' && (
+        <TollCalculatorScreen
+          onBack={() => {
+            triggerHaptic('light');
+            setCurrentScreen('home');
+          }}
+          cardBalance={activeCard?.balance ?? null}
         />
       )}
 

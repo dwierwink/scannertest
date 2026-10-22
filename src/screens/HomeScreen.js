@@ -13,6 +13,7 @@ import { formatRupiah } from '../services/apduCommands';
 export default function HomeScreen({
   onStartScan,
   onSelectSavedCard,
+  onOpenTollCalculator,
   scannedCards = [],
 }) {
   const insets = useSafeAreaInsets();
@@ -30,8 +31,8 @@ export default function HomeScreen({
           },
         ]}
       >
-        {/* Top Navigation Bar: Back Arrow & Skip */}
-        <View style={tw`flex-row justify-between items-center mb-4`}>
+        {/* Top Navigation Bar: Back Arrow & Action Buttons */}
+        <View style={tw`flex-row justify-between items-center mb-3`}>
           <TouchableOpacity
             style={tw`w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-slate-100`}
             activeOpacity={0.7}
@@ -39,13 +40,25 @@ export default function HomeScreen({
             <Text style={tw`text-slate-700 text-lg font-bold`}>‹</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={onStartScan}
-            activeOpacity={0.7}
-            style={tw`py-1 px-3 rounded-full bg-indigo-50 border border-indigo-100`}
-          >
-            <Text style={tw`text-indigo-600 font-bold text-xs`}>Skip</Text>
-          </TouchableOpacity>
+          <View style={tw`flex-row items-center gap-2`}>
+            {/* Tombol Kalkulator Tol di Header */}
+            <TouchableOpacity
+              onPress={onOpenTollCalculator}
+              activeOpacity={0.7}
+              style={tw`py-1.5 px-3 rounded-full bg-blue-50 border border-blue-200 flex-row items-center`}
+            >
+              <Text style={tw`text-xs mr-1`}>🛣️</Text>
+              <Text style={tw`text-blue-700 font-bold text-xs`}>Tarif Tol</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onStartScan}
+              activeOpacity={0.7}
+              style={tw`py-1.5 px-3 rounded-full bg-indigo-50 border border-indigo-100`}
+            >
+              <Text style={tw`text-indigo-600 font-bold text-xs`}>Skip</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Header Title: Payment Options */}
@@ -57,6 +70,30 @@ export default function HomeScreen({
             Pindai saldo kartu uang elektronik Mandiri, Flazz, BNI, BRI secara offline
           </Text>
         </View>
+
+        {/* Quick Access Card: Kalkulator Tarif Tol Jawa Timur */}
+        <TouchableOpacity
+          onPress={onOpenTollCalculator}
+          style={tw`bg-white p-3 rounded-2xl mb-2.5 flex-row items-center justify-between shadow-sm border border-blue-100`}
+          activeOpacity={0.85}
+        >
+          <View style={tw`flex-row items-center flex-1 mr-2`}>
+            <View style={tw`w-9 h-9 rounded-xl bg-blue-50 items-center justify-center mr-2.5`}>
+              <Text style={tw`text-base`}>🚗</Text>
+            </View>
+            <View style={tw`flex-1`}>
+              <Text style={tw`text-slate-800 font-bold text-xs`}>
+                Kalkulator Tarif Tol Jawa Timur
+              </Text>
+              <Text style={tw`text-slate-400 text-[10px]`}>
+                Gresik, Surabaya, Sidoarjo, Malang s/d Madiun
+              </Text>
+            </View>
+          </View>
+          <View style={tw`bg-blue-600 px-2.5 py-1 rounded-full`}>
+            <Text style={tw`text-white font-bold text-[10px]`}>Hitung ➔</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Konten Utama */}
         <ScrollView

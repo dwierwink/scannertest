@@ -22,12 +22,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.emoney.nfcbalance.model.CardInfo;
 import com.emoney.nfcbalance.nfc.NfcCardReader;
+import com.emoney.nfcbalance.toll.TollDataHelper;
 import com.emoney.nfcbalance.utils.SoundVibrationHelper;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     // State 1: Home
     private LinearLayout layoutStateHome;
     private MaterialButton btnMainScanNfc;
+    private MaterialButton btnMainTollCalc;
     private FloatingActionButton fabScan;
 
     // State 2: Result
@@ -57,12 +61,21 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvResultBalanceAmount;
     private EditText etResultCardNumber;
     private EditText etResultCardHolder;
+    private MaterialButton btnResultTollCalc;
     private MaterialButton btnContinueOrRescan;
 
     private TextView btnNavBack;
     private TextView btnSkipOrAction;
 
     private BottomSheetDialog scanDialog;
+    private BottomSheetDialog tollDialog;
+    private CardInfo lastScannedCard = null;
+    private int selectedGolonganIdx = 0;
+    private TollDataHelper.Gate selectedAsalGate = null;
+    private TollDataHelper.Gate selectedTujuanGate = null;
+    private final List<TollDataHelper.TollResult> accumulatedTrips = new ArrayList<>();
+    private TollDataHelper.TollResult currentLegResult = null;
+
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
@@ -97,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
         tvResultBalanceAmount = findViewById(R.id.tvResultBalanceAmount);
         etResultCardNumber = findViewById(R.id.etResultCardNumber);
         etResultCardHolder = findViewById(R.id.etResultCardHolder);
+        btnMainTollCalc = findViewById(R.id.btnMainTollCalc);
+        btnResultTollCalc = findViewById(R.id.btnResultTollCalc);
         btnContinueOrRescan = findViewById(R.id.btnContinueOrRescan);
 
         btnNavBack = findViewById(R.id.btnNavBack);
@@ -127,6 +142,10 @@ public class MainActivity extends AppCompatActivity {
         View.OnClickListener openScannerListener = v -> openScanningModal();
         btnMainScanNfc.setOnClickListener(openScannerListener);
         fabScan.setOnClickListener(openScannerListener);
+
+        View.OnClickListener openTollCalcListener = v -> showTollCalculatorDialog();
+        if (btnMainTollCalc != null) btnMainTollCalc.setOnClickListener(openTollCalcListener);
+        if (btnResultTollCalc != null) btnResultTollCalc.setOnClickListener(openTollCalcListener);
 
         btnContinueOrRescan.setOnClickListener(v -> resetToHome());
         btnNavBack.setOnClickListener(v -> resetToHome());
@@ -198,6 +217,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayCard(CardInfo card) {
+        this.lastScannedCard = card;
         layoutStateHome.setVisibility(View.GONE);
         layoutStateResult.setVisibility(View.VISIBLE);
         fabScan.setVisibility(View.GONE);
@@ -342,6 +362,209 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }
+    }
+
+    private void showTollCalculatorDialog() {
+        tollDialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_toll_calculator, null);
+        tollDialog.setContentView(view);
+
+        TextView btnClose = view.findViewById(R.id.btnCloseTollDialog);
+        View boxPilihGolongan = view.findViewById(R.id.boxPilihGolongan);
+        TextView tvSelectedGolongan = view.findViewById(R.id.tvSelectedGolongan);
+
+        View boxGerbangAsal = view.findViewById(R.id.boxGerbangAsal);
+        TextView tvSelectedAsal = view.findViewById(R.id.tvSelectedAsal);
+
+        View boxGerbangTujuan = view.findViewById(R.id.boxGerbangTujuan);
+        TextView tvSelectedTujuan = view.findViewById(R.id.tvSelectedTujuan);
+
+        MaterialButton btnTambahTarif = view.findViewById(R.id.btnTambahTarif);
+        MaterialButton btnBersihkanTarif = view.findViewById(R.id.btnBersihkanTarif);
+
+        TextView tvTotalTarifAmount = view.findViewById(R.id.tvTotalTarifAmount);
+        TextView tvBalanceComparisonStatus = view.findViewById(R.id.tvBalanceComparisonStatus);
+        LinearLayout layoutRincianRuas = view.findViewById(R.id.layoutRincianRuas);
+        TextView tvRincianSegmentsContent = view.findViewById(R.id.tvRincianSegmentsContent);
+
+        String[] golonganNames = new String[]{
+                "Golongan I (Sedan, Jip, Pick Up, Bus, Truk Kecil)",
+                "Golongan II (Truk dengan 2 gandar)",
+                "Golongan III (Truk dengan 3 gandar)",
+                "Golongan IV (Truk dengan 4 gandar)",
+                "Golongan V (Truk dengan 5 gandar / lebih)"
+        };
+
+        String[] golonganShort = new String[]{
+                "Golongan I", "Golongan II", "Golongan III", "Golongan IV", "Golongan V"
+        };
+
+        tvSelectedGolongan.setText(golonganShort[selectedGolonganIdx]);
+        if (selectedAsalGate != null) {
+            tvSelectedAsal.setText(selectedAsalGate.name);
+            tvSelectedAsal.setTextColor(Color.parseColor("#0F172A"));
+        } else {
+            tvSelectedAsal.setText("Gerbang Asal");
+            tvSelectedAsal.setTextColor(Color.parseColor("#94A3B8"));
+        }
+
+        if (selectedTujuanGate != null) {
+            tvSelectedTujuan.setText(selectedTujuanGate.name);
+            tvSelectedTujuan.setTextColor(Color.parseColor("#0F172A"));
+        } else {
+            tvSelectedTujuan.setText("Gerbang Tujuan");
+            tvSelectedTujuan.setTextColor(Color.parseColor("#94A3B8"));
+        }
+
+        btnClose.setOnClickListener(v -> tollDialog.dismiss());
+
+        Runnable updateUI = () -> {
+            long total = 0;
+            for (TollDataHelper.TollResult r : accumulatedTrips) {
+                total += r.totalFee;
+            }
+
+            if (selectedAsalGate != null && selectedTujuanGate != null) {
+                currentLegResult = TollDataHelper.calculateRoute(selectedAsalGate.id, selectedTujuanGate.id, selectedGolonganIdx);
+                if (currentLegResult.success) {
+                    total += currentLegResult.totalFee;
+                }
+            } else {
+                currentLegResult = null;
+            }
+
+            tvTotalTarifAmount.setText(TollDataHelper.formatRupiah(total));
+
+            // Breakdown
+            StringBuilder sb = new StringBuilder();
+            if (!accumulatedTrips.isEmpty()) {
+                sb.append("Perjalanan Tersimpan:\n");
+                for (int i = 0; i < accumulatedTrips.size(); i++) {
+                    TollDataHelper.TollResult leg = accumulatedTrips.get(i);
+                    sb.append(i + 1).append(". Total: ").append(TollDataHelper.formatRupiah(leg.totalFee)).append("\n");
+                    for (TollDataHelper.Segment s : leg.segments) {
+                        sb.append("   • ").append(s.ruasName).append(" (").append(s.fromName).append(" ➔ ").append(s.toName).append("): ").append(TollDataHelper.formatRupiah(s.fee)).append("\n");
+                    }
+                }
+            }
+
+            if (currentLegResult != null && currentLegResult.success) {
+                if (!accumulatedTrips.isEmpty()) {
+                    sb.append("\nRute Saat Ini:\n");
+                }
+                for (TollDataHelper.Segment s : currentLegResult.segments) {
+                    sb.append("• ").append(s.ruasName).append(" (").append(s.fromName).append(" ➔ ").append(s.toName).append("): ").append(TollDataHelper.formatRupiah(s.fee)).append("\n");
+                }
+                sb.append("Jarak Tempuh: ±").append(currentLegResult.distanceKm).append(" KM");
+            }
+
+            if (sb.length() > 0) {
+                layoutRincianRuas.setVisibility(View.VISIBLE);
+                tvRincianSegmentsContent.setText(sb.toString().trim());
+            } else {
+                layoutRincianRuas.setVisibility(View.GONE);
+            }
+
+            // Balance Comparison
+            if (lastScannedCard != null) {
+                tvBalanceComparisonStatus.setVisibility(View.VISIBLE);
+                long cardBal = lastScannedCard.getBalance();
+                if (cardBal >= total) {
+                    long diff = cardBal - total;
+                    tvBalanceComparisonStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#DCFCE7")));
+                    tvBalanceComparisonStatus.setTextColor(Color.parseColor("#15803D"));
+                    tvBalanceComparisonStatus.setText("✅ Saldo (" + TollDataHelper.formatRupiah(cardBal) + ") Cukup. Sisa: " + TollDataHelper.formatRupiah(diff));
+                } else {
+                    long diff = total - cardBal;
+                    tvBalanceComparisonStatus.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FEE2E2")));
+                    tvBalanceComparisonStatus.setTextColor(Color.parseColor("#B91C1C"));
+                    tvBalanceComparisonStatus.setText("⚠️ Saldo (" + TollDataHelper.formatRupiah(cardBal) + ") Kurang: " + TollDataHelper.formatRupiah(diff) + ". Segera Top Up!");
+                }
+            } else {
+                tvBalanceComparisonStatus.setVisibility(View.GONE);
+            }
+        };
+
+        updateUI.run();
+
+        // 1. Pilih Golongan
+        boxPilihGolongan.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Pilih Golongan Kendaraan")
+                    .setSingleChoiceItems(golonganNames, selectedGolonganIdx, (d, which) -> {
+                        selectedGolonganIdx = which;
+                        tvSelectedGolongan.setText(golonganShort[which]);
+                        d.dismiss();
+                        updateUI.run();
+                    })
+                    .setNegativeButton("Batal", null)
+                    .show();
+        });
+
+        List<TollDataHelper.Gate> gates = TollDataHelper.getAllGates();
+        String[] gateNamesWithRegion = new String[gates.size()];
+        for (int i = 0; i < gates.size(); i++) {
+            gateNamesWithRegion[i] = gates.get(i).name + " (" + gates.get(i).wilayah + ")";
+        }
+
+        // 2. Pilih Gerbang Asal
+        boxGerbangAsal.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Pilih Gerbang Asal Masuk Tol")
+                    .setItems(gateNamesWithRegion, (d, which) -> {
+                        selectedAsalGate = gates.get(which);
+                        tvSelectedAsal.setText(selectedAsalGate.name);
+                        tvSelectedAsal.setTextColor(Color.parseColor("#0F172A"));
+                        updateUI.run();
+                    })
+                    .setNegativeButton("Batal", null)
+                    .show();
+        });
+
+        // 3. Pilih Gerbang Tujuan
+        boxGerbangTujuan.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Pilih Gerbang Keluar Tol")
+                    .setItems(gateNamesWithRegion, (d, which) -> {
+                        selectedTujuanGate = gates.get(which);
+                        tvSelectedTujuan.setText(selectedTujuanGate.name);
+                        tvSelectedTujuan.setTextColor(Color.parseColor("#0F172A"));
+                        updateUI.run();
+                    })
+                    .setNegativeButton("Batal", null)
+                    .show();
+        });
+
+        // 4. Tambah Tarif
+        btnTambahTarif.setOnClickListener(v -> {
+            if (currentLegResult != null && currentLegResult.success) {
+                accumulatedTrips.add(currentLegResult);
+                Toast.makeText(this, "Tarif ruas " + selectedAsalGate.name + " ➔ " + selectedTujuanGate.name + " ditambahkan!", Toast.LENGTH_SHORT).show();
+                selectedAsalGate = selectedTujuanGate; // Auto-chain to next destination
+                selectedTujuanGate = null;
+                tvSelectedAsal.setText(selectedAsalGate.name);
+                tvSelectedTujuan.setText("Gerbang Tujuan");
+                tvSelectedTujuan.setTextColor(Color.parseColor("#94A3B8"));
+                updateUI.run();
+            } else {
+                Toast.makeText(this, "Pilih gerbang asal dan tujuan yang valid terlebih dahulu", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // 5. Bersihkan Tarif
+        btnBersihkanTarif.setOnClickListener(v -> {
+            accumulatedTrips.clear();
+            selectedAsalGate = null;
+            selectedTujuanGate = null;
+            tvSelectedAsal.setText("Gerbang Asal");
+            tvSelectedAsal.setTextColor(Color.parseColor("#94A3B8"));
+            tvSelectedTujuan.setText("Gerbang Tujuan");
+            tvSelectedTujuan.setTextColor(Color.parseColor("#94A3B8"));
+            updateUI.run();
+            Toast.makeText(this, "Tarif berhasil dibersihkan", Toast.LENGTH_SHORT).show();
+        });
+
+        tollDialog.show();
     }
 
     @Override
