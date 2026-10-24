@@ -30,9 +30,6 @@ export default function TollCalculatorScreen({
   const [selectedAsal, setSelectedAsal] = useState(null);
   const [selectedTujuan, setSelectedTujuan] = useState(null);
 
-  // Daftar Tarif Ditambahkan (Multi-Trip List)
-  const [addedTrips, setAddedTrips] = useState([]);
-
   // Modals Picker State
   const [modalType, setModalType] = useState(null); // 'golongan' | 'asal' | 'tujuan'
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,56 +57,19 @@ export default function TollCalculatorScreen({
     return calculateTollRoute(selectedAsal.id, selectedTujuan.id, selectedGolongan.code);
   }, [selectedAsal, selectedTujuan, selectedGolongan]);
 
-  // Total Keseluruhan Tarif:
-  // Jika ada addedTrips, jumlahkan semua addedTrips.
-  // Jika belum ada addedTrips tapi ada currentCalculation, tampilkan tarif rute saat ini.
+  // Total Keseluruhan Tarif (Dihitung Otomatis)
   const totalTarif = useMemo(() => {
-    if (addedTrips.length > 0) {
-      return addedTrips.reduce((acc, trip) => acc + trip.totalFee, 0);
-    }
     if (currentCalculation && currentCalculation.success) {
       return currentCalculation.totalFee;
     }
     return 0;
-  }, [addedTrips, currentCalculation]);
-
-  // Action: Tambah Tarif
-  const handleTambahTarif = () => {
-    triggerHaptic('success');
-    if (!selectedAsal || !selectedTujuan) {
-      alert('Harap pilih Gerbang Asal dan Gerbang Tujuan terlebih dahulu.');
-      return;
-    }
-    if (selectedAsal.id === selectedTujuan.id) {
-      alert('Gerbang Asal dan Gerbang Tujuan tidak boleh sama.');
-      return;
-    }
-    if (currentCalculation && currentCalculation.success) {
-      const newTrip = {
-        id: Date.now().toString(),
-        asal: selectedAsal,
-        tujuan: selectedTujuan,
-        golongan: selectedGolongan,
-        totalFee: currentCalculation.totalFee,
-        segments: currentCalculation.segments,
-        distanceKm: currentCalculation.distanceKm,
-      };
-      setAddedTrips((prev) => [...prev, newTrip]);
-    }
-  };
+  }, [currentCalculation]);
 
   // Action: Bersihkan Tarif
   const handleBersihkanTarif = () => {
     triggerHaptic('light');
     setSelectedAsal(null);
     setSelectedTujuan(null);
-    setAddedTrips([]);
-  };
-
-  // Hapus 1 trip tertentu dari daftar
-  const handleRemoveTrip = (tripId) => {
-    triggerHaptic('light');
-    setAddedTrips((prev) => prev.filter((t) => t.id !== tripId));
   };
 
   // Filter Gerbang di Modal
@@ -271,29 +231,15 @@ export default function TollCalculatorScreen({
             </View>
 
             {/* ======================================================== */}
-            {/* 2. DUA TOMBOL AKSI BIRU (PERSIS GAMBAR REFERENSI)          */}
+            {/* 2. TOMBOL BERSIHKAN TARIF                                 */}
             {/* ======================================================== */}
-            <View style={tw`flex-row justify-center items-center gap-3 mt-4`}>
-              {/* Tombol Tambah Tarif */}
-              <TouchableOpacity
-                onPress={handleTambahTarif}
-                activeOpacity={0.85}
-                style={[
-                  tw`px-6 py-2.5 rounded-full items-center justify-center shadow-sm`,
-                  { backgroundColor: '#1976D2' },
-                ]}
-              >
-                <Text style={tw`text-white font-bold text-xs tracking-wide`}>
-                  Tambah Tarif
-                </Text>
-              </TouchableOpacity>
-
+            <View style={tw`flex-row justify-center items-center mt-4`}>
               {/* Tombol Bersihkan Tarif */}
               <TouchableOpacity
                 onPress={handleBersihkanTarif}
                 activeOpacity={0.85}
                 style={[
-                  tw`px-6 py-2.5 rounded-full items-center justify-center shadow-sm`,
+                  tw`px-8 py-2.5 rounded-full items-center justify-center shadow-sm`,
                   { backgroundColor: '#1976D2' },
                 ]}
               >
@@ -442,60 +388,7 @@ export default function TollCalculatorScreen({
             </View>
           )}
 
-          {/* ======================================================== */}
-          {/* 6. DAFTAR TARIF YANG TELAH DITAMBAHKAN (MULTI-TRIP)       */}
-          {/* ======================================================== */}
-          {addedTrips.length > 0 && (
-            <View style={tw`mt-5`}>
-              <View style={tw`flex-row justify-between items-center mb-2 px-1`}>
-                <Text style={tw`text-slate-800 font-extrabold text-xs uppercase tracking-wider`}>
-                  Daftar Rute Perjalanan ({addedTrips.length})
-                </Text>
-                <TouchableOpacity onPress={() => setAddedTrips([])}>
-                  <Text style={tw`text-rose-600 font-bold text-xs`}>Hapus Semua</Text>
-                </TouchableOpacity>
-              </View>
 
-              {addedTrips.map((trip, idx) => (
-                <View
-                  key={trip.id}
-                  style={tw`bg-white p-3.5 rounded-2xl mb-2.5 border border-slate-100 shadow-sm flex-row items-center justify-between`}
-                >
-                  <View style={tw`flex-1 mr-2`}>
-                    <View style={tw`flex-row items-center mb-1`}>
-                      <View style={tw`bg-blue-50 px-2 py-0.5 rounded mr-2`}>
-                        <Text style={tw`text-blue-700 font-bold text-[10px]`}>
-                          Rute #{idx + 1}
-                        </Text>
-                      </View>
-                      <Text style={tw`text-slate-400 text-[10px] font-semibold`}>
-                        {trip.golongan.code} • ± {trip.distanceKm} Km
-                      </Text>
-                    </View>
-
-                    <Text style={tw`text-slate-800 font-bold text-xs`} numberOfLines={1}>
-                      {trip.asal.name} ➔ {trip.tujuan.name}
-                    </Text>
-                    <Text style={tw`text-slate-400 text-[10px]`}>
-                      {trip.asal.wilayahName} ke {trip.tujuan.wilayahName}
-                    </Text>
-                  </View>
-
-                  <View style={tw`items-end flex-row items-center gap-2`}>
-                    <Text style={tw`text-indigo-600 font-black text-sm font-mono`}>
-                      {formatRp(trip.totalFee)}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => handleRemoveTrip(trip.id)}
-                      style={tw`w-6 h-6 rounded-full bg-slate-100 items-center justify-center`}
-                    >
-                      <Text style={tw`text-slate-400 font-bold text-xs`}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
 
           {/* Attribution Footer */}
           <View style={tw`items-center mt-8 mb-2`}>

@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
     private int selectedGolonganIdx = 0;
     private TollDataHelper.Gate selectedAsalGate = null;
     private TollDataHelper.Gate selectedTujuanGate = null;
-    private final List<TollDataHelper.TollResult> accumulatedTrips = new ArrayList<>();
     private TollDataHelper.TollResult currentLegResult = null;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -358,7 +357,6 @@ public class MainActivity extends AppCompatActivity {
         View boxGerbangTujuan = view.findViewById(R.id.boxGerbangTujuan);
         TextView tvSelectedTujuan = view.findViewById(R.id.tvSelectedTujuan);
 
-        MaterialButton btnTambahTarif = view.findViewById(R.id.btnTambahTarif);
         MaterialButton btnBersihkanTarif = view.findViewById(R.id.btnBersihkanTarif);
 
         TextView tvTotalTarifAmount = view.findViewById(R.id.tvTotalTarifAmount);
@@ -399,14 +397,11 @@ public class MainActivity extends AppCompatActivity {
 
         Runnable updateUI = () -> {
             long total = 0;
-            for (TollDataHelper.TollResult r : accumulatedTrips) {
-                total += r.totalFee;
-            }
 
             if (selectedAsalGate != null && selectedTujuanGate != null) {
                 currentLegResult = TollDataHelper.calculateRoute(selectedAsalGate.id, selectedTujuanGate.id, selectedGolonganIdx);
                 if (currentLegResult.success) {
-                    total += currentLegResult.totalFee;
+                    total = currentLegResult.totalFee;
                 }
             } else {
                 currentLegResult = null;
@@ -416,21 +411,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Breakdown
             StringBuilder sb = new StringBuilder();
-            if (!accumulatedTrips.isEmpty()) {
-                sb.append("Perjalanan Tersimpan:\n");
-                for (int i = 0; i < accumulatedTrips.size(); i++) {
-                    TollDataHelper.TollResult leg = accumulatedTrips.get(i);
-                    sb.append(i + 1).append(". Total: ").append(TollDataHelper.formatRupiah(leg.totalFee)).append("\n");
-                    for (TollDataHelper.Segment s : leg.segments) {
-                        sb.append("   • ").append(s.ruasName).append(" (").append(s.fromName).append(" ➔ ").append(s.toName).append("): ").append(TollDataHelper.formatRupiah(s.fee)).append("\n");
-                    }
-                }
-            }
-
             if (currentLegResult != null && currentLegResult.success) {
-                if (!accumulatedTrips.isEmpty()) {
-                    sb.append("\nRute Saat Ini:\n");
-                }
                 for (TollDataHelper.Segment s : currentLegResult.segments) {
                     sb.append("• ").append(s.ruasName).append(" (").append(s.fromName).append(" ➔ ").append(s.toName).append("): ").append(TollDataHelper.formatRupiah(s.fee)).append("\n");
                 }
@@ -502,25 +483,8 @@ public class MainActivity extends AppCompatActivity {
             });
         });
 
-        // 4. Tambah Tarif
-        btnTambahTarif.setOnClickListener(v -> {
-            if (currentLegResult != null && currentLegResult.success) {
-                accumulatedTrips.add(currentLegResult);
-                Toast.makeText(this, "Tarif ruas " + selectedAsalGate.name + " ➔ " + selectedTujuanGate.name + " ditambahkan!", Toast.LENGTH_SHORT).show();
-                selectedAsalGate = selectedTujuanGate; // Auto-chain to next destination
-                selectedTujuanGate = null;
-                tvSelectedAsal.setText(selectedAsalGate.name);
-                tvSelectedTujuan.setText("Gerbang Tujuan");
-                tvSelectedTujuan.setTextColor(Color.parseColor("#94A3B8"));
-                updateUI.run();
-            } else {
-                Toast.makeText(this, "Pilih gerbang asal dan tujuan yang valid terlebih dahulu", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // 5. Bersihkan Tarif
+        // 4. Bersihkan Tarif
         btnBersihkanTarif.setOnClickListener(v -> {
-            accumulatedTrips.clear();
             selectedAsalGate = null;
             selectedTujuanGate = null;
             tvSelectedAsal.setText("Gerbang Asal");
