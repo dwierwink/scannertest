@@ -1,16 +1,15 @@
 /**
  * Database Gerbang Tol & Tarif Resmi Wilayah Jawa Timur (BPJT / Jasa Marga / Astra Tol)
- * Mencakup:
- * 1. Kab. Gresik
- * 2. Kota Surabaya
- * 3. Kab. Sidoarjo
- * 4. Kab. & Kota Pasuruan
- * 5. Kab. & Kota Probolinggo
- * 6. Kab. & Kota Malang
- * 7. Kab. & Kota Mojokerto
- * 8. Kab. Jombang
- * 9. Kab. Nganjuk & Kertosono
- * 10. Kab. & Kota Madiun
+ * Berdasarkan Penyesuaian Tarif Resmi Kepmen PUPR / Kepmen PU Terbaru:
+ * - Tol Surabaya - Gresik: Kepmen PUPR No. 149/KPTS/M/2024
+ * - Tol Simpang Susun Waru - Bandara Juanda: Kepmen PU No. 642/KPTS/M/2025 (berlaku mulai Juli 2025)
+ * - Tol Surabaya - Gempol: Kepmen PUPR No. 1345/KPTS/M/2024
+ * - Tol Surabaya - Mojokerto (SuMo): Kepmen PUPR No. 1306/KPTS/M/2024
+ * - Tol Krian - Legundi - Bunder - Manyar (KLBM): Kepmen PU No. 330/KPTS/M/2025
+ * - Tol Kertosono - Mojokerto (Jomo / Astra Tol): Kepmen PUPR No. 252/KPTS/M/2024
+ * - Tol Pandaan - Malang: Kepmen PU No. 602/KPTS/M/2025 (berlaku mulai Juni 2025)
+ * - Tol Gempol - Pasuruan & Pasuruan - Probolinggo (Paspro)
+ * - Tol Ngawi - Kertosono
  */
 
 export const GOLONGAN_OPTIONS = [
@@ -171,7 +170,7 @@ export const WILAYAH_TOL = [
   },
 ];
 
-// Flatten semua gate untuk akses instan
+// Flatten semua gate untuk akses cepat
 export const ALL_GATES = WILAYAH_TOL.reduce((acc, w) => {
   w.gates.forEach((g) => {
     acc.push({ ...g, wilayahName: w.name, wilayahId: w.id });
@@ -180,14 +179,10 @@ export const ALL_GATES = WILAYAH_TOL.reduce((acc, w) => {
 }, []);
 
 /**
- * Matriks Tarif Ruas Tunggal Resmi (Golongan I)
- * Digunakan untuk menghitung tarif gerbang-ke-gerbang secara presisi.
- * Rasio Golongan:
- * Gol II & III ~ 1.5x Gol I
- * Gol IV & V   ~ 2.0x Gol I
+ * Matriks Tarif Ruas Tunggal Resmi Terbaru (Golongan I)
  */
-const TARIFF_SEGMENTS_GOL1 = [
-  // 1. Ruas Surabaya - Gresik
+export const TARIFF_SEGMENTS_GOL1 = [
+  // 1. Ruas Surabaya - Gresik (Kepmen PUPR 149/KPTS/M/2024)
   { from: 'GT_DUPAK', to: 'GT_TANDES', fee: 4500, ruasName: 'Tol Surabaya - Gresik' },
   { from: 'GT_DUPAK', to: 'GT_ROMOKALISARI', fee: 12000, ruasName: 'Tol Surabaya - Gresik' },
   { from: 'GT_DUPAK', to: 'GT_KEBOMAS', fee: 21500, ruasName: 'Tol Surabaya - Gresik' },
@@ -199,40 +194,51 @@ const TARIFF_SEGMENTS_GOL1 = [
   { from: 'GT_ROMOKALISARI', to: 'GT_MANYAR', fee: 15500, ruasName: 'Tol Surabaya - Gresik' },
   { from: 'GT_KEBOMAS', to: 'GT_MANYAR', fee: 5500, ruasName: 'Tol Surabaya - Gresik' },
 
-  // 2. Ruas KLBM (Krian - Legundi - Bunder - Manyar)
-  { from: 'GT_KRIAN', to: 'GT_LEBANI_SUKO', fee: 14500, ruasName: 'Tol KLBM' },
-  { from: 'GT_KRIAN', to: 'GT_BELAHANREJO', fee: 14500, ruasName: 'Tol KLBM' },
-  { from: 'GT_KRIAN', to: 'GT_CERME', fee: 34500, ruasName: 'Tol KLBM' },
-  { from: 'GT_KRIAN', to: 'GT_BUNDER', fee: 47500, ruasName: 'Tol KLBM' },
-  { from: 'GT_LEBANI_SUKO', to: 'GT_CERME', fee: 20000, ruasName: 'Tol KLBM' },
-  { from: 'GT_LEBANI_SUKO', to: 'GT_BUNDER', fee: 29000, ruasName: 'Tol KLBM' },
-  { from: 'GT_CERME', to: 'GT_BUNDER', fee: 15000, ruasName: 'Tol KLBM' },
-
-  // 3. Ruas Surabaya Urban (Surabaya - Gempol)
+  // 2. Ruas Surabaya Urban (Surabaya - Gempol Seksi Dupak - Waru Sistem Terbuka)
   { from: 'GT_DUPAK', to: 'GT_BANYU_URIP', fee: 4000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
   { from: 'GT_DUPAK', to: 'GT_GUNUNGSARI', fee: 6000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
   { from: 'GT_DUPAK', to: 'GT_PAGESANGAN', fee: 6000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
   { from: 'GT_DUPAK', to: 'GT_WARU_SBY', fee: 6000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
+  { from: 'GT_BANYU_URIP', to: 'GT_GUNUNGSARI', fee: 4000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
   { from: 'GT_BANYU_URIP', to: 'GT_WARU_SBY', fee: 6000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
-  { from: 'GT_GUNUNGSARI', to: 'GT_WARU_SBY', fee: 4500, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
+  { from: 'GT_GUNUNGSARI', to: 'GT_PAGESANGAN', fee: 4000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
+  { from: 'GT_GUNUNGSARI', to: 'GT_WARU_SBY', fee: 5000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
+  { from: 'GT_PAGESANGAN', to: 'GT_WARU_SBY', fee: 4000, ruasName: 'Tol Surabaya - Gempol (Seksi Dupak - Waru)' },
 
-  // 4. Ruas Waru - Juanda
+  // 3. Ruas Waru - Juanda (Kepmen PU 642/KPTS/M/2025 terbaru: Gol I Waru - Juanda Rp 9.500)
   { from: 'GT_WARU_SBY', to: 'GT_BERBEK', fee: 4500, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
   { from: 'GT_WARU_SBY', to: 'GT_TAMBAKSUMUR', fee: 6500, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
-  { from: 'GT_WARU_SBY', to: 'GT_JUANDA', fee: 9000, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
-  { from: 'GT_BERBEK', to: 'GT_JUANDA', fee: 5500, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
-  { from: 'GT_TAMBAKSUMUR', to: 'GT_JUANDA', fee: 4000, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
+  { from: 'GT_WARU_SBY', to: 'GT_JUANDA', fee: 9500, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
+  { from: 'GT_BERBEK', to: 'GT_TAMBAKSUMUR', fee: 3000, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
+  { from: 'GT_BERBEK', to: 'GT_JUANDA', fee: 6000, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
+  { from: 'GT_TAMBAKSUMUR', to: 'GT_JUANDA', fee: 4500, ruasName: 'Tol Simpang Susun Waru - Bandara Juanda' },
 
-  // 5. Ruas Waru - Sidoarjo - Porong - Kejapanan (Sby - Gempol Selatan)
+  // 4. Ruas Waru - Sidoarjo - Porong - Kejapanan - Gempol (Sby - Gempol Selatan)
   { from: 'GT_WARU_SBY', to: 'GT_SIDOARJO', fee: 6500, ruasName: 'Tol Surabaya - Gempol (Waru - Sidoarjo)' },
   { from: 'GT_WARU_RAMP', to: 'GT_SIDOARJO', fee: 6500, ruasName: 'Tol Surabaya - Gempol (Waru - Sidoarjo)' },
-  { from: 'GT_WARU_SBY', to: 'GT_PORONG', fee: 11000, ruasName: 'Tol Surabaya - Gempol' },
-  { from: 'GT_WARU_SBY', to: 'GT_KEJAPANAN', fee: 18000, ruasName: 'Tol Surabaya - Gempol & Porong - Gempol' },
-  { from: 'GT_SIDOARJO', to: 'GT_PORONG', fee: 6000, ruasName: 'Tol Porong - Gempol' },
+  { from: 'GT_WARU_SBY', to: 'GT_TANGGULANGIN', fee: 8000, ruasName: 'Tol Surabaya - Gempol' },
+  { from: 'GT_WARU_SBY', to: 'GT_PORONG', fee: 10000, ruasName: 'Tol Surabaya - Gempol' },
+  { from: 'GT_WARU_SBY', to: 'GT_KEJAPANAN', fee: 16000, ruasName: 'Tol Surabaya - Gempol & Porong - Gempol' },
+  { from: 'GT_WARU_SBY', to: 'GT_GEMPOL', fee: 19000, ruasName: 'Tol Surabaya - Gempol & Porong - Gempol' },
+  { from: 'GT_SIDOARJO', to: 'GT_PORONG', fee: 6500, ruasName: 'Tol Porong - Gempol' },
   { from: 'GT_SIDOARJO', to: 'GT_KEJAPANAN', fee: 11500, ruasName: 'Tol Porong - Gempol' },
+  { from: 'GT_SIDOARJO', to: 'GT_GEMPOL', fee: 14500, ruasName: 'Tol Porong - Gempol' },
   { from: 'GT_PORONG', to: 'GT_KEJAPANAN', fee: 6000, ruasName: 'Tol Porong - Gempol' },
+  { from: 'GT_PORONG', to: 'GT_GEMPOL', fee: 9000, ruasName: 'Tol Porong - Gempol' },
+  { from: 'GT_KEJAPANAN', to: 'GT_GEMPOL', fee: 3500, ruasName: 'Tol Porong - Gempol' },
 
-  // 6. Ruas Surabaya - Mojokerto (SuMo)
+  // 5. Ruas KLBM (Krian - Legundi - Bunder - Manyar) (Kepmen PU 330/KPTS/M/2025)
+  { from: 'GT_KRIAN', to: 'GT_LEBANI_SUKO', fee: 14500, ruasName: 'Tol KLBM' },
+  { from: 'GT_KRIAN', to: 'GT_BELAHANREJO', fee: 14500, ruasName: 'Tol KLBM' },
+  { from: 'GT_KRIAN', to: 'GT_CERME', fee: 34500, ruasName: 'Tol KLBM' },
+  { from: 'GT_KRIAN', to: 'GT_BUNDER', fee: 47500, ruasName: 'Tol KLBM' },
+  { from: 'GT_BELAHANREJO', to: 'GT_CERME', fee: 20000, ruasName: 'Tol KLBM' },
+  { from: 'GT_BELAHANREJO', to: 'GT_BUNDER', fee: 33000, ruasName: 'Tol KLBM' },
+  { from: 'GT_LEBANI_SUKO', to: 'GT_CERME', fee: 20000, ruasName: 'Tol KLBM' },
+  { from: 'GT_LEBANI_SUKO', to: 'GT_BUNDER', fee: 29000, ruasName: 'Tol KLBM' },
+  { from: 'GT_CERME', to: 'GT_BUNDER', fee: 15000, ruasName: 'Tol KLBM' },
+
+  // 6. Ruas Surabaya - Mojokerto (SuMo) (Kepmen PUPR 1306/KPTS/M/2024)
   { from: 'GT_WARUGUNUNG', to: 'GT_LEBANI_SUKO', fee: 15000, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' },
   { from: 'GT_WARUGUNUNG', to: 'GT_KRIAN', fee: 22500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' },
   { from: 'GT_WARUGUNUNG', to: 'GT_PENOMPO', fee: 43500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' },
@@ -240,15 +246,15 @@ const TARIFF_SEGMENTS_GOL1 = [
   { from: 'GT_LEBANI_SUKO', to: 'GT_PENOMPO', fee: 28500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' },
   { from: 'GT_KRIAN', to: 'GT_PENOMPO', fee: 20500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' },
 
-  // 7. Ruas Kertosono - Mojokerto (Jomo / Astra Tol Nusantara)
-  { from: 'GT_PENOMPO', to: 'GT_MOJOKERTO_BARAT', fee: 6000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
-  { from: 'GT_PENOMPO', to: 'GT_JOMBANG', fee: 29000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
-  { from: 'GT_PENOMPO', to: 'GT_BANDAR', fee: 46000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
-  { from: 'GT_MOJOKERTO_BARAT', to: 'GT_JOMBANG', fee: 23000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
-  { from: 'GT_MOJOKERTO_BARAT', to: 'GT_BANDAR', fee: 40000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
-  { from: 'GT_JOMBANG', to: 'GT_BANDAR', fee: 17000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  // 7. Ruas Kertosono - Mojokerto (Jomo / Astra Tol) (Kepmen PUPR 252/KPTS/M/2024)
+  { from: 'GT_PENOMPO', to: 'GT_MOJOKERTO_BARAT', fee: 7000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  { from: 'GT_PENOMPO', to: 'GT_JOMBANG', fee: 34000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  { from: 'GT_PENOMPO', to: 'GT_BANDAR', fee: 54000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  { from: 'GT_MOJOKERTO_BARAT', to: 'GT_JOMBANG', fee: 27000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  { from: 'GT_MOJOKERTO_BARAT', to: 'GT_BANDAR', fee: 47000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
+  { from: 'GT_JOMBANG', to: 'GT_BANDAR', fee: 20000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' },
 
-  // 8. Ruas Ngawi - Kertosono (Bandar/Kertosono - Nganjuk - Caruban - Madiun)
+  // 8. Ruas Ngawi - Kertosono
   { from: 'GT_BANDAR', to: 'GT_NGANJUK', fee: 27000, ruasName: 'Tol Ngawi - Kertosono' },
   { from: 'GT_BANDAR', to: 'GT_CARUBAN', fee: 66500, ruasName: 'Tol Ngawi - Kertosono' },
   { from: 'GT_BANDAR', to: 'GT_MADIUN', fee: 76000, ruasName: 'Tol Ngawi - Kertosono' },
@@ -257,10 +263,9 @@ const TARIFF_SEGMENTS_GOL1 = [
   { from: 'GT_KERTOSONO', to: 'GT_MADIUN', fee: 76000, ruasName: 'Tol Ngawi - Kertosono' },
   { from: 'GT_NGANJUK', to: 'GT_CARUBAN', fee: 39000, ruasName: 'Tol Ngawi - Kertosono' },
   { from: 'GT_NGANJUK', to: 'GT_MADIUN', fee: 48500, ruasName: 'Tol Ngawi - Kertosono' },
-  { from: 'GT_CARUBAN', to: 'GT_MADIUN', fee: 9500, ruasName: 'Tol Ngawi - Kertosono' },
+  { from: 'GT_CARUBAN', to: 'GT_MADIUN', fee: 10000, ruasName: 'Tol Ngawi - Kertosono' },
 
   // 9. Ruas Gempol - Pasuruan (Gempas)
-  { from: 'GT_KEJAPANAN', to: 'GT_GEMPOL', fee: 3000, ruasName: 'Tol Gempol - Pasuruan' },
   { from: 'GT_GEMPOL', to: 'GT_BANGIL', fee: 9500, ruasName: 'Tol Gempol - Pasuruan' },
   { from: 'GT_GEMPOL', to: 'GT_REMBANG', fee: 19000, ruasName: 'Tol Gempol - Pasuruan' },
   { from: 'GT_GEMPOL', to: 'GT_PASURUAN', fee: 28000, ruasName: 'Tol Gempol - Pasuruan' },
@@ -281,17 +286,17 @@ const TARIFF_SEGMENTS_GOL1 = [
   { from: 'GT_TONGAS', to: 'GT_PROBOLINGGO_TIMUR', fee: 23000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
   { from: 'GT_TONGAS', to: 'GT_GENDING', fee: 35000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
   { from: 'GT_PROBOLINGGO_BARAT', to: 'GT_PROBOLINGGO_TIMUR', fee: 14000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
-  { from: 'GT_PROBOLINGGO_BARAT', to: 'GT_GENDING', fee: 26000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
+  { from: 'GT_PROBOLINGGO_BARAT', to: 'GT_GENDING', fee: 26500, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
   { from: 'GT_PROBOLINGGO_TIMUR', to: 'GT_GENDING', fee: 12000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)' },
 
-  // 11. Ruas Gempol - Pandaan & Pandaan - Malang (Mapan)
+  // 11. Ruas Gempol - Pandaan & Pandaan - Malang (Mapan) (Kepmen PU 602/KPTS/M/2025)
   { from: 'GT_GEMPOL', to: 'GT_PANDAAN', fee: 14500, ruasName: 'Tol Gempol - Pandaan' },
   { from: 'GT_KEJAPANAN', to: 'GT_PANDAAN', fee: 16500, ruasName: 'Tol Gempol - Pandaan' },
-  { from: 'GT_PANDAAN', to: 'GT_PURWODADI', fee: 15500, ruasName: 'Tol Pandaan - Malang' },
-  { from: 'GT_PANDAAN', to: 'GT_LAWANG', fee: 23500, ruasName: 'Tol Pandaan - Malang' },
-  { from: 'GT_PANDAAN', to: 'GT_SINGOSARI', fee: 30500, ruasName: 'Tol Pandaan - Malang' },
-  { from: 'GT_PANDAAN', to: 'GT_PAKIS', fee: 35000, ruasName: 'Tol Pandaan - Malang' },
-  { from: 'GT_PANDAAN', to: 'GT_MALANG_KOTA', fee: 38500, ruasName: 'Tol Pandaan - Malang' },
+  { from: 'GT_PANDAAN', to: 'GT_PURWODADI', fee: 15000, ruasName: 'Tol Pandaan - Malang' },
+  { from: 'GT_PANDAAN', to: 'GT_LAWANG', fee: 23000, ruasName: 'Tol Pandaan - Malang' },
+  { from: 'GT_PANDAAN', to: 'GT_SINGOSARI', fee: 30000, ruasName: 'Tol Pandaan - Malang' },
+  { from: 'GT_PANDAAN', to: 'GT_PAKIS', fee: 34500, ruasName: 'Tol Pandaan - Malang' },
+  { from: 'GT_PANDAAN', to: 'GT_MALANG_KOTA', fee: 38000, ruasName: 'Tol Pandaan - Malang' },
   { from: 'GT_PURWODADI', to: 'GT_LAWANG', fee: 8000, ruasName: 'Tol Pandaan - Malang' },
   { from: 'GT_PURWODADI', to: 'GT_SINGOSARI', fee: 15000, ruasName: 'Tol Pandaan - Malang' },
   { from: 'GT_PURWODADI', to: 'GT_PAKIS', fee: 19500, ruasName: 'Tol Pandaan - Malang' },
@@ -305,30 +310,29 @@ const TARIFF_SEGMENTS_GOL1 = [
 ];
 
 /**
- * Helper mencari tarif langsung antar dua gerbang
+ * Helper pencarian segmen tarif langsung (2 arah)
  */
-function findDirectSegment(idA, idB) {
+export function findDirectSegment(idA, idB) {
   return TARIFF_SEGMENTS_GOL1.find(
     (s) => (s.from === idA && s.to === idB) || (s.from === idB && s.to === idA)
   );
 }
 
-/**
- * Hub Junction penghubung antar-koridor tol Trans-Jawa Jawa Timur:
- * - Warugunung & Penompo (Tol Surabaya-Mojokerto)
- * - Penompo & Bandar (Tol Kertosono-Mojokerto)
- * - Bandar & Madiun (Tol Ngawi-Kertosono)
- * - Waru & Kejapanan (Tol Surabaya-Gempol)
- * - Kejapanan / Gempol (Titik temu arah Malang & Probolinggo)
- * - Gempol & Grati (Tol Gempol-Pasuruan)
- * - Grati & Gending (Tol Pasuruan-Probolinggo)
- * - Gempol & Pandaan & Malang (Tol Pandaan-Malang)
- * - Dupak & Manyar (Tol Surabaya-Gresik)
- * - Krian & Bunder (Tol KLBM)
- */
+// Pengelompokan Gerbang Tol per Koridor Jaringan
+const G_GRESIK_SBY = ['GT_MANYAR', 'GT_KEBOMAS', 'GT_ROMOKALISARI', 'GT_TANDES', 'GT_DUPAK'];
+const G_SBY_INNER = ['GT_DUPAK', 'GT_BANYU_URIP', 'GT_GUNUNGSARI', 'GT_PAGESANGAN', 'GT_WARU_SBY'];
+const G_JUANDA = ['GT_BERBEK', 'GT_TAMBAKSUMUR', 'GT_JUANDA'];
+const G_SBY_GEMPOL_SOUTH = ['GT_WARU_RAMP', 'GT_SIDOARJO', 'GT_TANGGULANGIN', 'GT_PORONG', 'GT_KEJAPANAN', 'GT_GEMPOL'];
+const G_KLBM = ['GT_BUNDER', 'GT_CERME', 'GT_BELAHANREJO'];
+const G_SUMO = ['GT_WARUGUNUNG', 'GT_LEBANI_SUKO', 'GT_KRIAN', 'GT_PENOMPO'];
+const G_JOMO = ['GT_PENOMPO', 'GT_MOJOKERTO_BARAT', 'GT_JOMBANG', 'GT_BANDAR'];
+const G_NGAWI = ['GT_BANDAR', 'GT_KERTOSONO', 'GT_NGANJUK', 'GT_CARUBAN', 'GT_MADIUN'];
+const G_GEMPAS = ['GT_GEMPOL', 'GT_BANGIL', 'GT_REMBANG', 'GT_PASURUAN', 'GT_GRATI'];
+const G_PASPRO = ['GT_GRATI', 'GT_TONGAS', 'GT_PROBOLINGGO_BARAT', 'GT_PROBOLINGGO_TIMUR', 'GT_GENDING'];
+const G_MAPAN = ['GT_GEMPOL', 'GT_KEJAPANAN', 'GT_PANDAAN', 'GT_PURWODADI', 'GT_LAWANG', 'GT_SINGOSARI', 'GT_PAKIS', 'GT_MALANG_KOTA'];
 
 /**
- * Menghitung rute tol otomatis beserta rincian tarif per ruas tol
+ * Menghitung rute tol otomatis beserta rincian tarif per ruas tol yang akurat
  * @param {string} asalId ID Gerbang Asal
  * @param {string} tujuanId ID Gerbang Tujuan
  * @param {string} golonganCode 'Golongan I' | 'Golongan II' | 'Golongan III' | 'Golongan IV' | 'Golongan V'
@@ -350,274 +354,348 @@ export function calculateTollRoute(asalId, tujuanId, golonganCode = 'Golongan I'
     return { success: false, totalFee: 0, segments: [], error: 'Gerbang tol tidak ditemukan' };
   }
 
-  // Multiplier faktor pengali golongan kendaraan BPJT:
+  // Multiplier golongan kendaraan BPJT:
   // Gol I   = 1.0x
   // Gol II  = 1.5x
-  // Gol III = 1.5x (atau 1.6x di beberapa ruas Jasa Marga)
+  // Gol III = 1.5x
   // Gol IV  = 2.0x
-  // Gol V   = 2.0x (atau 2.1x)
+  // Gol V   = 2.0x
   let golMultiplier = 1.0;
-  if (golonganCode === 'Golongan II') golMultiplier = 1.5;
-  else if (golonganCode === 'Golongan III') golMultiplier = 1.5;
-  else if (golonganCode === 'Golongan IV') golMultiplier = 2.0;
-  else if (golonganCode === 'Golongan V') golMultiplier = 2.0;
+  if (golonganCode === 'Golongan II' || golonganCode === 'Golongan III') golMultiplier = 1.5;
+  else if (golonganCode === 'Golongan IV' || golonganCode === 'Golongan V') golMultiplier = 2.0;
 
-  // 1. Coba pencarian ruas langsung
-  const direct = findDirectSegment(asalId, tujuanId);
-  if (direct) {
-    const fee = Math.round(direct.fee * golMultiplier / 500) * 500;
+  // Helper konversi tarif segmen ke golongan
+  function toGolFee(directSeg) {
+    if (!directSeg) return 0;
+    // Khusus Waru - Juanda: Gol II/III Rp 14.000, Gol IV/V Rp 19.000
+    if (directSeg.ruasName.includes('Waru - Bandara Juanda')) {
+      if ((directSeg.from === 'GT_WARU_SBY' && directSeg.to === 'GT_JUANDA') || (directSeg.from === 'GT_JUANDA' && directSeg.to === 'GT_WARU_SBY')) {
+        if (golMultiplier === 1.5) return 14000;
+        if (golMultiplier === 2.0) return 19000;
+        return directSeg.fee;
+      }
+    }
+    return Math.round((directSeg.fee * golMultiplier) / 500) * 500;
+  }
+
+  // Helper pembuat objek segmen
+  function makeSegment(directSeg, fromGateId, toGateId) {
+    const fGate = ALL_GATES.find((g) => g.id === fromGateId);
+    const tGate = ALL_GATES.find((g) => g.id === toGateId);
     return {
-      success: true,
-      totalFee: fee,
-      segments: [
-        {
-          ruasName: direct.ruasName,
-          fromName: gateA.name,
-          toName: gateB.name,
-          fee: fee,
-        },
-      ],
-      distanceKm: Math.abs(gateA.km - gateB.km) || 15,
+      ruasName: directSeg.ruasName,
+      fromName: fGate ? fGate.name : fromGateId,
+      toName: tGate ? tGate.name : toGateId,
+      fee: toGolFee(directSeg),
     };
   }
 
-  // 2. Pencarian rute multi-ruas melewati koridor jalan tol Trans-Jawa Jawa Timur
-  // Titik simpul (Waypoints / Junctions)
-  const junctions = [
-    'GT_DUPAK',
-    'GT_WARU_SBY',
-    'GT_WARUGUNUNG',
-    'GT_KRIAN',
-    'GT_PENOMPO',
-    'GT_BANDAR',
-    'GT_KEJAPANAN',
-    'GT_GEMPOL',
-    'GT_GRATI',
-    'GT_PANDAAN',
-    'GT_SINGOSARI',
-  ];
+  // 1. Cek pencarian ruas langsung
+  const direct = findDirectSegment(asalId, tujuanId);
+  if (direct) {
+    const seg = makeSegment(direct, asalId, tujuanId);
+    return {
+      success: true,
+      totalFee: seg.fee,
+      segments: [seg],
+      distanceKm: Math.abs(gateA.km - gateB.km) || 15,
+      originGate: gateA,
+      destinationGate: gateB,
+      golongan: GOLONGAN_OPTIONS.find((g) => g.code === golonganCode) || GOLONGAN_OPTIONS[0],
+    };
+  }
 
-  // Algoritma graph traversal sederhana mencari jalur terpendek/termurah antar segmen
-  const segmentsResult = [];
-  let totalGol1 = 0;
-
-  // Cek koridor Trans-Jawa Barat (Madiun/Nganjuk/Jombang/Mojokerto -> Surabaya/Sidoarjo/Malang/Probolinggo)
+  // 2. Evaluasi Multi-Ruas Antar-Koridor Jawa Timur
+  const isGresikA = G_GRESIK_SBY.includes(asalId) && asalId !== 'GT_DUPAK';
+  const isGresikB = G_GRESIK_SBY.includes(tujuanId) && tujuanId !== 'GT_DUPAK';
+  const isSbyInnerA = G_SBY_INNER.includes(asalId);
+  const isSbyInnerB = G_SBY_INNER.includes(tujuanId);
+  const isJuandaA = G_JUANDA.includes(asalId);
+  const isJuandaB = G_JUANDA.includes(tujuanId);
+  const isSouthA = G_SBY_GEMPOL_SOUTH.includes(asalId) && asalId !== 'GT_WARU_SBY';
+  const isSouthB = G_SBY_GEMPOL_SOUTH.includes(tujuanId) && tujuanId !== 'GT_WARU_SBY';
+  const isMapanA = G_MAPAN.includes(asalId) && asalId !== 'GT_GEMPOL' && asalId !== 'GT_KEJAPANAN';
+  const isMapanB = G_MAPAN.includes(tujuanId) && tujuanId !== 'GT_GEMPOL' && tujuanId !== 'GT_KEJAPANAN';
+  const isGempasA = G_GEMPAS.includes(asalId) && asalId !== 'GT_GEMPOL';
+  const isGempasB = G_GEMPAS.includes(tujuanId) && tujuanId !== 'GT_GEMPOL';
+  const isPasproA = G_PASPRO.includes(asalId) && asalId !== 'GT_GRATI';
+  const isPasproB = G_PASPRO.includes(tujuanId) && tujuanId !== 'GT_GRATI';
   const isWestA = ['MADIUN', 'NGANJUK', 'JOMBANG'].includes(gateA.wilayahId);
   const isWestB = ['MADIUN', 'NGANJUK', 'JOMBANG'].includes(gateB.wilayahId);
+  const isKlbmA = G_KLBM.includes(asalId);
+  const isKlbmB = G_KLBM.includes(tujuanId);
 
-  const isSouthA = ['PASURUAN', 'PROBOLINGGO', 'MALANG'].includes(gateA.wilayahId);
-  const isSouthB = ['PASURUAN', 'PROBOLINGGO', 'MALANG'].includes(gateB.wilayahId);
+  const rawSegments = [];
 
-  // Jalur Lintas Wilayah Barat ke Timur (misal Madiun ke Surabaya / Malang / Probolinggo)
-  if (isWestA !== isWestB) {
+  // A. Rute Melibatkan Koridor Surabaya - Gresik (Kebomas, Manyar, Romokalisari, Tandes)
+  if (isGresikA || isGresikB) {
+    const isReversed = !isGresikA;
+    const gresikGateId = isGresikA ? asalId : tujuanId;
+    const destGateId = isGresikA ? tujuanId : asalId;
+
+    // Tahap 1: Gerbang Gresik <-> Dupak
+    const s1 = findDirectSegment(gresikGateId, 'GT_DUPAK');
+    if (s1) {
+      rawSegments.push(isReversed ? { seg: s1, from: 'GT_DUPAK', to: gresikGateId } : { seg: s1, from: gresikGateId, to: 'GT_DUPAK' });
+    }
+
+    // Tahap 2: Dupak ke destinasi
+    if (G_SBY_INNER.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: destGateId, to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: destGateId });
+    } else if (G_JUANDA.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', 'GT_WARU_SBY');
+      const s3 = findDirectSegment('GT_WARU_SBY', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_WARU_SBY', to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: 'GT_WARU_SBY' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: destGateId, to: 'GT_WARU_SBY' } : { seg: s3, from: 'GT_WARU_SBY', to: destGateId });
+    } else if (G_SBY_GEMPOL_SOUTH.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', 'GT_WARU_SBY');
+      const s3 = findDirectSegment('GT_WARU_SBY', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_WARU_SBY', to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: 'GT_WARU_SBY' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: destGateId, to: 'GT_WARU_SBY' } : { seg: s3, from: 'GT_WARU_SBY', to: destGateId });
+    } else if (G_MAPAN.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', 'GT_WARU_SBY');
+      const s3 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s4 = findDirectSegment('GT_GEMPOL', 'GT_PANDAAN');
+      const s5 = destGateId === 'GT_PANDAAN' ? null : findDirectSegment('GT_PANDAAN', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_WARU_SBY', to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: 'GT_WARU_SBY' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s3, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: 'GT_PANDAAN', to: 'GT_GEMPOL' } : { seg: s4, from: 'GT_GEMPOL', to: 'GT_PANDAAN' });
+      if (s5) rawSegments.push(isReversed ? { seg: s5, from: destGateId, to: 'GT_PANDAAN' } : { seg: s5, from: 'GT_PANDAAN', to: destGateId });
+    } else if (G_GEMPAS.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', 'GT_WARU_SBY');
+      const s3 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s4 = findDirectSegment('GT_GEMPOL', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_WARU_SBY', to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: 'GT_WARU_SBY' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s3, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: destGateId, to: 'GT_GEMPOL' } : { seg: s4, from: 'GT_GEMPOL', to: destGateId });
+    } else if (G_PASPRO.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_DUPAK', 'GT_WARU_SBY');
+      const s3 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s4 = findDirectSegment('GT_GEMPOL', 'GT_GRATI');
+      const s5 = findDirectSegment('GT_GRATI', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_WARU_SBY', to: 'GT_DUPAK' } : { seg: s2, from: 'GT_DUPAK', to: 'GT_WARU_SBY' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s3, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: 'GT_GRATI', to: 'GT_GEMPOL' } : { seg: s4, from: 'GT_GEMPOL', to: 'GT_GRATI' });
+      if (s5) rawSegments.push(isReversed ? { seg: s5, from: destGateId, to: 'GT_GRATI' } : { seg: s5, from: 'GT_GRATI', to: destGateId });
+    }
+    if (isReversed) {
+      rawSegments.reverse();
+    }
+  }
+
+  // B. Rute KLBM (Bunder, Cerme, Belahanrejo) ke SuMo / Mojokerto / Barat / Malang
+  else if (isKlbmA || isKlbmB) {
+    const isReversed = !isKlbmA;
+    const klbmGateId = isKlbmA ? asalId : tujuanId;
+    const otherGateId = isKlbmA ? tujuanId : asalId;
+
+    const s1 = findDirectSegment(klbmGateId, 'GT_KRIAN');
+    if (s1) {
+      rawSegments.push(isReversed ? { seg: s1, from: 'GT_KRIAN', to: klbmGateId } : { seg: s1, from: klbmGateId, to: 'GT_KRIAN' });
+    }
+
+    if (otherGateId === 'GT_WARUGUNUNG') {
+      const s2 = findDirectSegment('GT_KRIAN', 'GT_WARUGUNUNG');
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: otherGateId, to: 'GT_KRIAN' } : { seg: s2, from: 'GT_KRIAN', to: otherGateId });
+    } else if (otherGateId === 'GT_PENOMPO') {
+      const s2 = findDirectSegment('GT_KRIAN', 'GT_PENOMPO');
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: otherGateId, to: 'GT_KRIAN' } : { seg: s2, from: 'GT_KRIAN', to: otherGateId });
+    } else if (isWestB || isWestA) {
+      const s2 = findDirectSegment('GT_KRIAN', 'GT_PENOMPO');
+      const s3 = { from: 'GT_PENOMPO', to: 'GT_BANDAR', fee: 54000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' };
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_PENOMPO', to: 'GT_KRIAN' } : { seg: s2, from: 'GT_KRIAN', to: 'GT_PENOMPO' });
+      rawSegments.push(isReversed ? { seg: s3, from: 'GT_BANDAR', to: 'GT_PENOMPO' } : { seg: s3, from: 'GT_PENOMPO', to: 'GT_BANDAR' });
+
+      if (otherGateId !== 'GT_BANDAR') {
+        const s4 = findDirectSegment('GT_BANDAR', otherGateId) || {
+          fee: Math.abs(gateB.km - 82) * 950,
+          ruasName: 'Tol Ngawi - Kertosono',
+        };
+        rawSegments.push(isReversed ? { seg: s4, from: otherGateId, to: 'GT_BANDAR' } : { seg: s4, from: 'GT_BANDAR', to: otherGateId });
+      }
+    } else if (G_MAPAN.includes(otherGateId)) {
+      const segBypass = { from: 'GT_KRIAN', to: 'GT_GEMPOL', fee: 16000, ruasName: 'Tol Krian - Porong - Gempol' };
+      const s3 = findDirectSegment('GT_GEMPOL', 'GT_PANDAAN');
+      const s4 = otherGateId === 'GT_PANDAAN' ? null : findDirectSegment('GT_PANDAAN', otherGateId);
+      rawSegments.push(isReversed ? { seg: segBypass, from: 'GT_GEMPOL', to: 'GT_KRIAN' } : { seg: segBypass, from: 'GT_KRIAN', to: 'GT_GEMPOL' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_PANDAAN', to: 'GT_GEMPOL' } : { seg: s3, from: 'GT_GEMPOL', to: 'GT_PANDAAN' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: otherGateId, to: 'GT_PANDAAN' } : { seg: s4, from: 'GT_PANDAAN', to: otherGateId });
+    }
+    if (isReversed) {
+      rawSegments.reverse();
+    }
+  }
+
+  // C. Rute Surabaya Urban / Juanda ke Sidoarjo Selatan / Malang / Pasuruan / Probolinggo
+  else if (
+    ((isSbyInnerA || isJuandaA) && (isJuandaB || isSouthB || isMapanB || isGempasB || isPasproB)) ||
+    ((isSbyInnerB || isJuandaB) && (isJuandaA || isSouthA || isMapanA || isGempasA || isPasproA))
+  ) {
+    const isReversed = !(isSbyInnerA || isJuandaA);
+    const startGateId = !isReversed ? asalId : tujuanId;
+    const destGateId = !isReversed ? tujuanId : asalId;
+
+    // Start ke Simpang Susun Waru
+    if (startGateId !== 'GT_WARU_SBY') {
+      const s1 = findDirectSegment(startGateId, 'GT_WARU_SBY');
+      if (s1) rawSegments.push(isReversed ? { seg: s1, from: 'GT_WARU_SBY', to: startGateId } : { seg: s1, from: startGateId, to: 'GT_WARU_SBY' });
+    }
+
+    // Waru ke Destinasi
+    if (G_JUANDA.includes(destGateId) && destGateId !== 'GT_WARU_SBY') {
+      const s2 = findDirectSegment('GT_WARU_SBY', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: destGateId, to: 'GT_WARU_SBY' } : { seg: s2, from: 'GT_WARU_SBY', to: destGateId });
+    } else if (G_SBY_GEMPOL_SOUTH.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_WARU_SBY', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: destGateId, to: 'GT_WARU_SBY' } : { seg: s2, from: 'GT_WARU_SBY', to: destGateId });
+    } else if (G_MAPAN.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s3 = findDirectSegment('GT_GEMPOL', 'GT_PANDAAN');
+      const s4 = destGateId === 'GT_PANDAAN' ? null : findDirectSegment('GT_PANDAAN', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s2, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_PANDAAN', to: 'GT_GEMPOL' } : { seg: s3, from: 'GT_GEMPOL', to: 'GT_PANDAAN' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: destGateId, to: 'GT_PANDAAN' } : { seg: s4, from: 'GT_PANDAAN', to: destGateId });
+    } else if (G_GEMPAS.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s3 = findDirectSegment('GT_GEMPOL', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s2, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: destGateId, to: 'GT_GEMPOL' } : { seg: s3, from: 'GT_GEMPOL', to: destGateId });
+    } else if (G_PASPRO.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_WARU_SBY', 'GT_GEMPOL');
+      const s3 = findDirectSegment('GT_GEMPOL', 'GT_GRATI');
+      const s4 = findDirectSegment('GT_GRATI', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_GEMPOL', to: 'GT_WARU_SBY' } : { seg: s2, from: 'GT_WARU_SBY', to: 'GT_GEMPOL' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: 'GT_GRATI', to: 'GT_GEMPOL' } : { seg: s3, from: 'GT_GEMPOL', to: 'GT_GRATI' });
+      if (s4) rawSegments.push(isReversed ? { seg: s4, from: destGateId, to: 'GT_GRATI' } : { seg: s4, from: 'GT_GRATI', to: destGateId });
+    }
+    if (isReversed) {
+      rawSegments.reverse();
+    }
+  }
+
+  // D. Rute Lintas Koridor Barat (Madiun, Nganjuk, Jombang) ke Surabaya / Timur / Malang
+  else if (isWestA !== isWestB) {
+    const isReversed = !isWestA;
     const westGate = isWestA ? gateA : gateB;
     const otherGate = isWestA ? gateB : gateA;
 
-    // Bagian 1: Dari West Gate ke Simpang Bandar/Kertosono
+    // Segmen 1: West Gate ke Simpang Bandar
     if (westGate.id !== 'GT_BANDAR') {
       const segW = findDirectSegment(westGate.id, 'GT_BANDAR') || {
-        ruasName: 'Tol Ngawi - Kertosono',
         fee: Math.abs(westGate.km - 82) * 950,
+        ruasName: 'Tol Ngawi - Kertosono',
       };
-      totalGol1 += segW.fee;
-      segmentsResult.push({
-        ruasName: segW.ruasName,
-        fromName: isWestA ? westGate.name : 'Bandar / Kertosono',
-        toName: isWestA ? 'Bandar / Kertosono' : westGate.name,
-        feeGol1: segW.fee,
-      });
+      rawSegments.push(isReversed ? { seg: segW, from: 'GT_BANDAR', to: westGate.id } : { seg: segW, from: westGate.id, to: 'GT_BANDAR' });
     }
 
-    // Bagian 2: Dari Bandar ke Penompo (Tol Kertosono - Mojokerto)
-    const segMo = { ruasName: 'Tol Kertosono - Mojokerto (Jomo)', fee: 46000 };
-    totalGol1 += segMo.fee;
-    segmentsResult.push({
-      ruasName: segMo.ruasName,
-      fromName: isWestA ? 'Bandar' : 'Penompo (Mojokerto)',
-      toName: isWestA ? 'Penompo (Mojokerto)' : 'Bandar',
-      feeGol1: segMo.fee,
-    });
+    // Segmen 2: Bandar ke Penompo (Tol Jomo)
+    const segMo = { from: 'GT_BANDAR', to: 'GT_PENOMPO', fee: 54000, ruasName: 'Tol Kertosono - Mojokerto (Jomo)' };
+    rawSegments.push(isReversed ? { seg: segMo, from: 'GT_PENOMPO', to: 'GT_BANDAR' } : { seg: segMo, from: 'GT_BANDAR', to: 'GT_PENOMPO' });
 
-    // Bagian 3: Dari Penompo ke Surabaya/Sidoarjo/Selatan
+    // Segmen 3: Penompo ke Surabaya/Selatan/Malang
     if (otherGate.wilayahId === 'MOJOKERTO') {
       // Sampai Mojokerto
     } else if (otherGate.wilayahId === 'SURABAYA') {
       const segSuMo = findDirectSegment('GT_PENOMPO', otherGate.id) || {
-        ruasName: 'Tol Surabaya - Mojokerto (SuMo)',
-        fee: 43500,
+        from: 'GT_PENOMPO', to: 'GT_WARUGUNUNG', fee: 43500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)',
       };
-      totalGol1 += segSuMo.fee;
-      segmentsResult.push({
-        ruasName: segSuMo.ruasName,
-        fromName: isWestA ? 'Penompo' : otherGate.name,
-        toName: isWestA ? otherGate.name : 'Penompo',
-        feeGol1: segSuMo.fee,
-      });
-    } else if (isSouthB || isSouthA) {
-      // Ke arah Malang / Pasuruan / Probolinggo via Krian -> Kejapanan / Gempol
-      const segSuMo = { ruasName: 'Tol SuMo (Penompo - Krian)', fee: 20500 };
-      const segKLBM = { ruasName: 'Tol Krian - Porong / Kejapanan Bypass', fee: 16000 };
-      totalGol1 += segSuMo.fee + segKLBM.fee;
-      segmentsResult.push({
-        ruasName: 'Tol Surabaya - Mojokerto (Penompo - Krian)',
-        fromName: isWestA ? 'Penompo' : 'Krian',
-        toName: isWestA ? 'Krian' : 'Penompo',
-        feeGol1: segSuMo.fee,
-      });
-      segmentsResult.push({
-        ruasName: 'Tol Penghubung Krian - Porong - Gempol',
-        fromName: isWestA ? 'Krian' : 'Gempol',
-        toName: isWestA ? 'Gempol' : 'Krian',
-        feeGol1: segKLBM.fee,
-      });
+      rawSegments.push(isReversed ? { seg: segSuMo, from: otherGate.id, to: 'GT_PENOMPO' } : { seg: segSuMo, from: 'GT_PENOMPO', to: otherGate.id });
+    } else if (otherGate.wilayahId === 'MALANG') {
+      const segSuMo = { from: 'GT_PENOMPO', to: 'GT_KRIAN', fee: 20500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' };
+      const segBypass = { from: 'GT_KRIAN', to: 'GT_GEMPOL', fee: 16000, ruasName: 'Tol Krian - Porong - Gempol' };
+      const segPandaan = findDirectSegment('GT_GEMPOL', 'GT_PANDAAN');
+      const segMpn = findDirectSegment('GT_PANDAAN', otherGate.id) || {
+        from: 'GT_PANDAAN', to: otherGate.id, fee: 38000, ruasName: 'Tol Pandaan - Malang',
+      };
+      rawSegments.push(isReversed ? { seg: segSuMo, from: 'GT_KRIAN', to: 'GT_PENOMPO' } : { seg: segSuMo, from: 'GT_PENOMPO', to: 'GT_KRIAN' });
+      rawSegments.push(isReversed ? { seg: segBypass, from: 'GT_GEMPOL', to: 'GT_KRIAN' } : { seg: segBypass, from: 'GT_KRIAN', to: 'GT_GEMPOL' });
+      rawSegments.push(isReversed ? { seg: segPandaan, from: 'GT_PANDAAN', to: 'GT_GEMPOL' } : { seg: segPandaan, from: 'GT_GEMPOL', to: 'GT_PANDAAN' });
+      rawSegments.push(isReversed ? { seg: segMpn, from: otherGate.id, to: 'GT_PANDAAN' } : { seg: segMpn, from: 'GT_PANDAAN', to: otherGate.id });
+    } else if (['PASURUAN', 'PROBOLINGGO'].includes(otherGate.wilayahId)) {
+      const segSuMo = { from: 'GT_PENOMPO', to: 'GT_KRIAN', fee: 20500, ruasName: 'Tol Surabaya - Mojokerto (SuMo)' };
+      const segBypass = { from: 'GT_KRIAN', to: 'GT_GEMPOL', fee: 16000, ruasName: 'Tol Krian - Porong - Gempol' };
+      rawSegments.push(isReversed ? { seg: segSuMo, from: 'GT_KRIAN', to: 'GT_PENOMPO' } : { seg: segSuMo, from: 'GT_PENOMPO', to: 'GT_KRIAN' });
+      rawSegments.push(isReversed ? { seg: segBypass, from: 'GT_GEMPOL', to: 'GT_KRIAN' } : { seg: segBypass, from: 'GT_KRIAN', to: 'GT_GEMPOL' });
 
-      // Lalu dari Gempol ke arah Malang atau Paspro
-      if (otherGate.wilayahId === 'MALANG') {
-        const segMpn = findDirectSegment('GT_PANDAAN', otherGate.id) || {
-          ruasName: 'Tol Pandaan - Malang',
-          fee: 38500,
-        };
-        totalGol1 += 14500 + segMpn.fee;
-        segmentsResult.push({
-          ruasName: 'Tol Gempol - Pandaan',
-          fromName: 'Gempol',
-          toName: 'Pandaan',
-          feeGol1: 14500,
-        });
-        segmentsResult.push({
-          ruasName: segMpn.ruasName,
-          fromName: 'Pandaan',
-          toName: otherGate.name,
-          feeGol1: segMpn.fee,
-        });
-      } else if (['PASURUAN', 'PROBOLINGGO'].includes(otherGate.wilayahId)) {
+      if (otherGate.wilayahId === 'PASURUAN') {
         const segGempas = findDirectSegment('GT_GEMPOL', otherGate.id) || {
-          ruasName: 'Tol Gempol - Pasuruan & Paspro',
-          fee: 48500 + (otherGate.wilayahId === 'PROBOLINGGO' ? 40000 : 0),
+          from: 'GT_GEMPOL', to: otherGate.id, fee: 28000, ruasName: 'Tol Gempol - Pasuruan',
         };
-        totalGol1 += segGempas.fee;
-        segmentsResult.push({
-          ruasName: segGempas.ruasName,
-          fromName: 'Gempol',
-          toName: otherGate.name,
-          feeGol1: segGempas.fee,
-        });
+        rawSegments.push(isReversed ? { seg: segGempas, from: otherGate.id, to: 'GT_GEMPOL' } : { seg: segGempas, from: 'GT_GEMPOL', to: otherGate.id });
+      } else {
+        const segGempas = findDirectSegment('GT_GEMPOL', 'GT_GRATI');
+        const segPaspro = findDirectSegment('GT_GRATI', otherGate.id) || {
+          from: 'GT_GRATI', to: otherGate.id, fee: 40000, ruasName: 'Tol Pasuruan - Probolinggo (Paspro)',
+        };
+        rawSegments.push(isReversed ? { seg: segGempas, from: 'GT_GRATI', to: 'GT_GEMPOL' } : { seg: segGempas, from: 'GT_GEMPOL', to: 'GT_GRATI' });
+        rawSegments.push(isReversed ? { seg: segPaspro, from: otherGate.id, to: 'GT_GRATI' } : { seg: segPaspro, from: 'GT_GRATI', to: otherGate.id });
       }
-    } else {
-      // Ke Sidoarjo / Gresik
-      const segSuMo = { ruasName: 'Tol Surabaya - Mojokerto (Warugunung)', fee: 43500 };
-      totalGol1 += segSuMo.fee;
-      segmentsResult.push({
-        ruasName: segSuMo.ruasName,
-        fromName: 'Penompo',
-        toName: 'Warugunung',
-        feeGol1: segSuMo.fee,
-      });
     }
-  } else if (isSouthA !== isSouthB) {
-    // Surabaya / Sidoarjo / Gresik ke Pasuruan / Malang / Probolinggo
-    const northGate = !isSouthA ? gateA : gateB;
-    const southGate = isSouthA ? gateA : gateB;
-
-    // Ruas 1: Dari Surabaya/Sidoarjo ke Kejapanan / Gempol
-    let sbyToGempolFee = 18000;
-    if (northGate.wilayahId === 'GRESIK') {
-      const gresikSeg = findDirectSegment(northGate.id, 'GT_DUPAK') || { fee: 21500 };
-      totalGol1 += gresikSeg.fee;
-      segmentsResult.push({
-        ruasName: 'Tol Surabaya - Gresik',
-        fromName: isSouthA ? 'Dupak' : northGate.name,
-        toName: isSouthA ? northGate.name : 'Dupak',
-        feeGol1: gresikSeg.fee,
-      });
+    if (isReversed) {
+      rawSegments.reverse();
     }
-
-    if (northGate.id === 'GT_SIDOARJO') sbyToGempolFee = 11500;
-    else if (northGate.id === 'GT_PORONG') sbyToGempolFee = 6000;
-
-    totalGol1 += sbyToGempolFee;
-    segmentsResult.push({
-      ruasName: 'Tol Surabaya - Gempol & Porong - Gempol',
-      fromName: isSouthA ? 'Gempol' : (northGate.wilayahId === 'GRESIK' ? 'Dupak' : northGate.name),
-      toName: isSouthA ? (northGate.wilayahId === 'GRESIK' ? 'Dupak' : northGate.name) : 'Gempol',
-      feeGol1: sbyToGempolFee,
-    });
-
-    // Ruas 2: Dari Gempol ke Malang atau Paspro
-    if (southGate.wilayahId === 'MALANG') {
-      const segMpn = findDirectSegment('GT_PANDAAN', southGate.id) || {
-        ruasName: 'Tol Pandaan - Malang',
-        fee: 38500,
-      };
-      totalGol1 += 14500 + segMpn.fee;
-      segmentsResult.push({
-        ruasName: 'Tol Gempol - Pandaan',
-        fromName: 'Gempol',
-        toName: 'Pandaan',
-        feeGol1: 14500,
-      });
-      segmentsResult.push({
-        ruasName: segMpn.ruasName,
-        fromName: 'Pandaan',
-        toName: southGate.name,
-        feeGol1: segMpn.fee,
-      });
-    } else if (southGate.wilayahId === 'PASURUAN') {
-      const segGempas = findDirectSegment('GT_GEMPOL', southGate.id) || {
-        ruasName: 'Tol Gempol - Pasuruan',
-        fee: 28000,
-      };
-      totalGol1 += segGempas.fee;
-      segmentsResult.push({
-        ruasName: segGempas.ruasName,
-        fromName: 'Gempol',
-        toName: southGate.name,
-        feeGol1: segGempas.fee,
-      });
-    } else if (southGate.wilayahId === 'PROBOLINGGO') {
-      const gempasFee = 48500;
-      const pasproSeg = findDirectSegment('GT_GRATI', southGate.id) || {
-        ruasName: 'Tol Pasuruan - Probolinggo (Paspro)',
-        fee: 40000,
-      };
-      totalGol1 += gempasFee + pasproSeg.fee;
-      segmentsResult.push({
-        ruasName: 'Tol Gempol - Pasuruan (Gempol - Grati)',
-        fromName: 'Gempol',
-        toName: 'Grati',
-        feeGol1: gempasFee,
-      });
-      segmentsResult.push({
-        ruasName: pasproSeg.ruasName,
-        fromName: 'Grati',
-        toName: southGate.name,
-        feeGol1: pasproSeg.fee,
-      });
-    }
-  } else {
-    // Estimasi berbasis jarak tarif dasar per kilometer jika tidak ada segmen eksplisit
-    const kmDiff = Math.abs(gateA.km - gateB.km) || 12;
-    const estFeeGol1 = Math.max(5500, Math.round((kmDiff * 950) / 500) * 500);
-    totalGol1 = estFeeGol1;
-    segmentsResult.push({
-      ruasName: `Ruas Tol ${gateA.wilayahName} - ${gateB.wilayahName}`,
-      fromName: gateA.name,
-      toName: gateB.name,
-      feeGol1: estFeeGol1,
-    });
   }
 
-  // Konversikan tarif ke golongan terpilih
-  const finalSegments = segmentsResult.map((s) => {
-    const feeGol = Math.round((s.feeGol1 * golMultiplier) / 500) * 500;
-    return {
-      ruasName: s.ruasName,
-      fromName: s.fromName,
-      toName: s.toName,
-      fee: feeGol,
-    };
-  });
+  // E. Rute Sidoarjo Selatan (Sidoarjo/Porong/Kejapanan) ke Pasuruan / Malang / Probolinggo
+  else if (
+    ((isSouthA || asalId === 'GT_GEMPOL') && (isMapanB || isGempasB || isPasproB)) ||
+    ((isSouthB || tujuanId === 'GT_GEMPOL') && (isMapanA || isGempasA || isPasproA))
+  ) {
+    const isReversed = !(isSouthA || asalId === 'GT_GEMPOL');
+    const southGateId = !isReversed ? asalId : tujuanId;
+    const destGateId = !isReversed ? tujuanId : asalId;
 
+    if (southGateId !== 'GT_GEMPOL') {
+      const s1 = findDirectSegment(southGateId, 'GT_GEMPOL') || {
+        from: southGateId, to: 'GT_GEMPOL', fee: 14500, ruasName: 'Tol Surabaya - Gempol & Porong - Gempol',
+      };
+      rawSegments.push(isReversed ? { seg: s1, from: 'GT_GEMPOL', to: southGateId } : { seg: s1, from: southGateId, to: 'GT_GEMPOL' });
+    }
+
+    if (G_MAPAN.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_GEMPOL', 'GT_PANDAAN');
+      const s3 = destGateId === 'GT_PANDAAN' ? null : findDirectSegment('GT_PANDAAN', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_PANDAAN', to: 'GT_GEMPOL' } : { seg: s2, from: 'GT_GEMPOL', to: 'GT_PANDAAN' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: destGateId, to: 'GT_PANDAAN' } : { seg: s3, from: 'GT_PANDAAN', to: destGateId });
+    } else if (G_GEMPAS.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_GEMPOL', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: destGateId, to: 'GT_GEMPOL' } : { seg: s2, from: 'GT_GEMPOL', to: destGateId });
+    } else if (G_PASPRO.includes(destGateId)) {
+      const s2 = findDirectSegment('GT_GEMPOL', 'GT_GRATI');
+      const s3 = findDirectSegment('GT_GRATI', destGateId);
+      if (s2) rawSegments.push(isReversed ? { seg: s2, from: 'GT_GRATI', to: 'GT_GEMPOL' } : { seg: s2, from: 'GT_GEMPOL', to: 'GT_GRATI' });
+      if (s3) rawSegments.push(isReversed ? { seg: s3, from: destGateId, to: 'GT_GRATI' } : { seg: s3, from: 'GT_GRATI', to: destGateId });
+    }
+    if (isReversed) {
+      rawSegments.reverse();
+    }
+  }
+
+  // F. Fallback jarak jika belum terpetakan di simpul utama
+  if (rawSegments.length === 0) {
+    const kmDiff = Math.abs(gateA.km - gateB.km) || 15;
+    const estGol1 = Math.max(5500, Math.round((kmDiff * 950) / 500) * 500);
+    const feeGol = Math.round((estGol1 * golMultiplier) / 500) * 500;
+    return {
+      success: true,
+      totalFee: feeGol,
+      segments: [
+        {
+          ruasName: `Ruas Tol ${gateA.wilayahName} - ${gateB.wilayahName}`,
+          fromName: gateA.name,
+          toName: gateB.name,
+          fee: feeGol,
+        },
+      ],
+      distanceKm: kmDiff,
+      originGate: gateA,
+      destinationGate: gateB,
+      golongan: GOLONGAN_OPTIONS.find((g) => g.code === golonganCode) || GOLONGAN_OPTIONS[0],
+    };
+  }
+
+  const finalSegments = rawSegments.map((item) => makeSegment(item.seg, item.from, item.to));
   const finalTotal = finalSegments.reduce((sum, s) => sum + s.fee, 0);
   const distanceKm = Math.abs(gateA.km - gateB.km) || Math.round(finalTotal / 1000);
 

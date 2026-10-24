@@ -37,7 +37,7 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: 📦 Install NPM dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: ⚙️ Expo Prebuild (Generate Native Android with NFC Plugin)
         run: npx expo prebuild --platform android --clean
